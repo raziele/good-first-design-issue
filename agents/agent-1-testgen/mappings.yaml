@@ -1,0 +1,12 @@
+# Spec file -> test file mapping rules
+mappings:
+  - spec_pattern: "specs/behavior/*.spec.md"
+    test_backend: "tests/backend/unit/test_{stem}.py"
+    test_frontend: "tests/frontend/unit/{stem}.test.ts"
+
+  - spec_pattern: "specs/api/openapi.yaml"
+    test_backend: "tests/backend/contract/"
+
+  - spec_pattern: "specs/uxi/flows/*.flow.md"
+    test_frontend_e2e: "tests/frontend/e2e/{stem}.e2e.test.ts"
+    test_frontend_component: "tests/frontend/component/{stem}.test.ts"

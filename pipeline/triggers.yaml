@@ -1,0 +1,13 @@
+# Pipeline trigger configuration
+triggers:
+  - type: cron
+    schedule: "0 */6 * * *"  # Every 6 hours
+    description: Regular code drift detection
+
+  - type: push
+    paths:
+      - "specs/**"
+    description: Spec change triggers full pipeline
+
+  - type: manual
+    description: Manual dispatch via workflow_dispatch

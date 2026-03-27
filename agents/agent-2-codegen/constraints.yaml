@@ -1,0 +1,20 @@
+# Filesystem constraints for Agent 2
+allowed_write_paths:
+  - "src/**"
+
+forbidden_write_paths:
+  - "tests/**"
+  - "specs/**"
+  - "agents/**"
+  - "pipeline/**"
+
+forbidden_patterns:
+  - "os.system("
+  - "subprocess.call("
+  - "eval("
+  - "exec("
+
+allowed_dependencies:
+  backend: []
+  frontend: []
+# Add dependencies here as they are approved

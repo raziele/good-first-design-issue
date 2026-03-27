@@ -1,0 +1,10 @@
+{
+  "name": "frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'TODO: configure dev server'",
+    "build": "echo 'TODO: configure build'",
+    "test": "echo 'TODO: configure test runner'"
+  }
+}

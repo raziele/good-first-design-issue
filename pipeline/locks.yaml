@@ -1,0 +1,16 @@
+# Filesystem permission rules per agent
+permissions:
+  agent-1-testgen:
+    read:  ["specs/**"]
+    write: ["tests/**"]
+    deny:  ["src/**", "agents/**", "pipeline/**"]
+
+  agent-2-codegen:
+    read:  ["specs/**", "tests/**"]
+    write: ["src/**"]
+    deny:  ["tests/**", "specs/**", "agents/**", "pipeline/**"]
+
+  agent-3-review:
+    read:  ["specs/**", "tests/**", "src/**"]
+    write: ["pipeline/reports/**"]
+    deny:  ["src/**", "tests/**", "specs/**"]

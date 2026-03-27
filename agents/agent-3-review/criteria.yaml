@@ -1,0 +1,28 @@
+# Review quality gates
+gates:
+  - name: all_tests_pass
+    type: hard
+    description: All tests must pass
+
+  - name: no_out_of_scope_changes
+    type: hard
+    description: Only src/ files may be modified
+
+  - name: no_security_issues
+    type: hard
+    description: No injection vectors, hardcoded secrets, or unsafe patterns
+
+  - name: code_quality
+    type: soft
+    description: No dead code, follows conventions
+
+  - name: brand_compliance
+    type: soft
+    description: User-facing strings match voice-and-tone guidelines
+
+  - name: spec_compliance
+    type: soft
+    description: Implementation matches spec intent beyond test coverage
+
+confidence_threshold: 70
+# Merge is blocked if confidence score is below this threshold

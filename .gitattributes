@@ -1,0 +1,3 @@
+# Lock patterns — enforce merge strategies
+specs/** linguist-documentation merge=ours
+tests/** merge=ours

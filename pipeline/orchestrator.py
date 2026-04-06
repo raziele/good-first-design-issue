@@ -37,17 +37,44 @@ def run_tests() -> dict:
     return {"passed": 0, "failed": 0, "errors": []}
 
 
-def run_agent(agent_name: str) -> dict:
-    """Run a specific agent and return its output."""
-    # TODO: Implement agent invocation
-    # Each agent runs in an isolated environment per pipeline/locks.yaml
-    return {"status": "not_implemented", "agent": agent_name}
+def run_agent(agent_name: str, extra_context: str = "") -> dict:
+    """Run a named agent via scripts/run_agent.py and return results."""
+    cmd = [
+        sys.executable,
+        str(PROJECT_ROOT / "scripts" / "run_agent.py"),
+        agent_name,
+    ]
+    if extra_context:
+        cmd += ["--extra-context", extra_context]
+
+    result = subprocess.run(
+        cmd,
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=960,  # 900 agent timeout + 60s buffer
+        cwd=PROJECT_ROOT,
+    )
+    return {
+        "status": "success" if result.returncode == 0 else "failed",
+        "agent": agent_name,
+        "output": result.stdout,
+        "stderr": result.stderr,
+    }
 
 
-def validate_file_scope(agent_name: str, changed_files: list[str]) -> bool:
-    """Verify an agent only modified files within its allowed scope."""
-    # TODO: Load permissions from pipeline/locks.yaml and validate
-    return True
+def validate_file_scope(agent_name: str) -> bool:
+    """Run scripts/validate_scope.sh to check the agent stayed in scope."""
+    result = subprocess.run(
+        [str(PROJECT_ROOT / "scripts" / "validate_scope.sh"), agent_name],
+        capture_output=True,
+        text=True,
+        check=False,
+        cwd=PROJECT_ROOT,
+    )
+    if result.returncode != 0:
+        print(f"Scope violation: {result.stdout}{result.stderr}", file=sys.stderr)
+    return result.returncode == 0
 
 
 def generate_report(run_id: str, results: dict) -> Path:

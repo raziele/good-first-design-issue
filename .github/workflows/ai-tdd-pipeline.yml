@@ -1,18 +1,76 @@
 name: AI-First TDD Pipeline
 
 on:
-  schedule:
-    - cron: "0 */6 * * *"
   push:
+    branches:
+      - main
     paths:
       - "specs/**"
   workflow_dispatch:
 
 jobs:
-  pipeline:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      specs_changed: ${{ steps.diff.outputs.specs_changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect spec changes
+        id: diff
+        run: |
+          if git diff --name-only HEAD~1 -- specs/ | grep -q .; then
+            echo "specs_changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "specs_changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  agent-1-testgen:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.specs_changed == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          curl https://cursor.com/install -fsS | bash
+          pip install pyyaml
+
+      - name: Run Agent 1 — Test Generator
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+        run: python scripts/run_agent.py agent-1-testgen
+
+      - name: Validate file scope
+        run: scripts/validate_scope.sh agent-1-testgen
+
+      - name: Upload generated tests
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-tests
+          path: tests/
+
+  baseline-tests:
+    needs: agent-1-testgen
+    if: always() && !failure() && !cancelled()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download generated tests
+        if: needs.agent-1-testgen.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: generated-tests
+          path: tests/
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -33,12 +91,149 @@ jobs:
         run: npm ci
         continue-on-error: true
 
-      - name: Run pipeline orchestrator
-        run: python pipeline/orchestrator.py
+      - name: Run backend tests
+        run: echo "TODO — run pytest tests/backend/"
 
-      - name: Upload report
+      - name: Run frontend tests
+        run: echo "TODO — run vitest tests/frontend/"
+
+      - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pipeline-report
+          name: baseline-test-results
+          path: tests/
+
+  agent-2-codegen:
+    needs: baseline-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download tests
+        uses: actions/download-artifact@v4
+        with:
+          name: baseline-test-results
+          path: tests/
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: |
+          curl https://cursor.com/install -fsS | bash
+          pip install pyyaml
+
+      - name: Run Agent 2 — Code Generator
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+        run: python scripts/run_agent.py agent-2-codegen
+
+      - name: Validate file scope
+        run: scripts/validate_scope.sh agent-2-codegen
+
+      - name: Upload codegen output
+        uses: actions/upload-artifact@v4
+        with:
+          name: codegen-src
+          path: src/
+
+  post-codegen-tests:
+    needs: agent-2-codegen
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download generated tests
+        uses: actions/download-artifact@v4
+        with:
+          name: baseline-test-results
+          path: tests/
+
+      - name: Download codegen source
+        uses: actions/download-artifact@v4
+        with:
+          name: codegen-src
+          path: src/
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install backend dependencies
+        run: pip install -r src/backend/requirements.txt
+        continue-on-error: true
+
+      - name: Install frontend dependencies
+        working-directory: src/frontend
+        run: npm ci
+        continue-on-error: true
+
+      - name: Run backend tests
+        run: echo "TODO — run pytest tests/backend/"
+
+      - name: Run frontend tests
+        run: echo "TODO — run vitest tests/frontend/"
+
+      - name: Upload final test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-test-results
+          path: tests/
+
+  agent-3-review:
+    needs: post-codegen-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download codegen source
+        uses: actions/download-artifact@v4
+        with:
+          name: codegen-src
+          path: src/
+
+      - name: Download final test results
+        uses: actions/download-artifact@v4
+        with:
+          name: final-test-results
+          path: tests/
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          curl https://cursor.com/install -fsS | bash
+          pip install pyyaml
+
+      - name: Run Agent 3 — Reviewer
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+        run: python scripts/run_agent.py agent-3-review --extra-context "$(git diff HEAD~1)"
+
+      - name: Validate file scope
+        run: scripts/validate_scope.sh agent-3-review
+
+      - name: Upload review report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: review-report
           path: pipeline/reports/

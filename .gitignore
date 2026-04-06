@@ -24,6 +24,13 @@ Thumbs.db
 # Pipeline reports (generated artifacts)
 pipeline/reports/*.json
 
+# Secrets
+.secrets/
+
+# Local-only files
+designboard.zip
+user-data/
+
 # Environment
 .env
 .env.local

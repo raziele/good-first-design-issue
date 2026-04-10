@@ -184,13 +184,13 @@ scripts/run_agent.py <agent-name>
 
 ### Model Configuration
 
-Each agent's model is defined in its `config.yaml`. The default is `claude-sonnet-4-6`. To change a model, edit the relevant config file — no code changes needed.
+Each agent's model is defined in its `config.yaml`. The default is `claude-4.6-sonnet-medium`. To change a model, edit the relevant config file — no code changes needed.
 
 | Agent | Config | Default Model |
 |-------|--------|---------------|
-| Agent 1 — Test Generator | `agents/agent-1-testgen/config.yaml` | `claude-sonnet-4-6` |
-| Agent 2 — Code Generator | `agents/agent-2-codegen/config.yaml` | `claude-sonnet-4-6` |
-| Agent 3 — Reviewer | `agents/agent-3-review/config.yaml` | `claude-sonnet-4-6` |
+| Agent 1 — Test Generator | `agents/agent-1-testgen/config.yaml` | `claude-4.6-sonnet-medium` |
+| Agent 2 — Code Generator | `agents/agent-2-codegen/config.yaml` | `claude-4.6-sonnet-medium` |
+| Agent 3 — Reviewer | `agents/agent-3-review/config.yaml` | `claude-4.6-sonnet-medium` |
 
 ### Secret Management
 

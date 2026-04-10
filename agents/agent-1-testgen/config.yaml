@@ -1,5 +1,5 @@
 agent: test-generator
-model: claude-sonnet-4-6
+model: claude-4.6-sonnet-medium
 temperature: 0.2
 max_tokens: 8192
 context_sources:

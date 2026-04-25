@@ -27,6 +27,10 @@ pipeline/reports/*.json
 # Secrets
 .secrets/
 
+# Agent skills (installed ephemerally per CI job — not committed)
+.cursor/skills/
+.agents/skills/
+
 # Local-only files
 designboard.zip
 user-data/

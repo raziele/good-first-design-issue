@@ -14,3 +14,8 @@ permissions:
     read:  ["specs/**", "tests/**", "src/**"]
     write: ["pipeline/reports/**"]
     deny:  ["src/**", "tests/**", "specs/**"]
+
+  agent-4-docgen:
+    read:  ["specs/**", "tests/**", "src/**", "README.md", "CLAUDE.md"]
+    write: ["README.md", "CLAUDE.md"]
+    deny:  ["tests/**", "src/**", "agents/**", "pipeline/**", "specs/**"]

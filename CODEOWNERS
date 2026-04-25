@@ -12,3 +12,7 @@ pipeline/ @human-reviewers
 
 # Source code can be auto-reviewed by Agent 3
 # src/ @agent-3-review
+
+# Docs are updated by Agent 4 — require human review
+README.md @human-reviewers
+CLAUDE.md @human-reviewers

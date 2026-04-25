@@ -1,0 +1,11 @@
+agent: doc-generator
+model: claude-4.6-sonnet-medium
+temperature: 0.2
+max_tokens: 8192
+context_sources:
+  - specs/**
+  - tests/**
+  - src/**
+  - README.md
+  - CLAUDE.md
+output_dir: null

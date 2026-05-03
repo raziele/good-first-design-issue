@@ -1,0 +1,227 @@
+name: Specs to Code (Full TDD Pipeline)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "specs/**"
+  workflow_dispatch:
+
+jobs:
+  agent-1-testgen:
+    runs-on: ubuntu-latest
+    outputs:
+      branch_name: ${{ steps.create-branch.outputs.branch }}
+      has_changes: ${{ steps.commit-tests.outputs.has_changes }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create feature branch
+        id: create-branch
+        run: |
+          BRANCH="agent/feature-${{ github.run_id }}"
+          git checkout -b "$BRANCH"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: |
+          curl https://cursor.com/install -fsS | bash
+          pip install pyyaml
+
+      - name: Install testgen skills
+        run: npx skills@latest add mattpocock/skills/tdd --yes
+
+      - name: Run Agent 1 — Test Generator
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+        run: python scripts/run_agent.py agent-1-testgen
+
+      - name: Validate file scope
+        run: scripts/validate_scope.sh agent-1-testgen
+
+      - name: Commit tests to feature branch
+        id: commit-tests
+        run: |
+          git config user.name "agent-1-testgen[bot]"
+          git config user.email "agent-1-testgen[bot]@users.noreply.github.com"
+          git add tests/
+          if git diff --cached --quiet; then
+            echo "No test changes."
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "test: generate tests from specs [run ${{ github.run_id }}]"
+            git push -u origin ${{ steps.create-branch.outputs.branch }}
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  agent-2-codegen:
+    needs: agent-1-testgen
+    if: needs.agent-1-testgen.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.agent-1-testgen.outputs.branch_name }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: |
+          curl https://cursor.com/install -fsS | bash
+          pip install pyyaml
+
+      - name: Install backend dependencies
+        run: pip install -r src/backend/requirements.txt
+        continue-on-error: true
+
+      - name: Install frontend dependencies
+        working-directory: src/frontend
+        run: npm ci
+        continue-on-error: true
+
+      - name: Install codegen skills
+        run: npx skills@latest add https://github.com/pbakaus/impeccable --skill frontend-design --yes
+
+      - name: Run Agent 2 — Code Generator
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+        run: python scripts/run_agent.py agent-2-codegen
+
+      - name: Validate file scope
+        run: scripts/validate_scope.sh agent-2-codegen
+
+      - name: Commit code to feature branch
+        run: |
+          git config user.name "agent-2-codegen[bot]"
+          git config user.email "agent-2-codegen[bot]@users.noreply.github.com"
+          git add src/
+          if git diff --cached --quiet; then
+            echo "No source changes."
+          else
+            git commit -m "feat: implement code to pass tests [run ${{ github.run_id }}]"
+            git push origin ${{ needs.agent-1-testgen.outputs.branch_name }}
+          fi
+
+  post-codegen-tests:
+    needs: [agent-1-testgen, agent-2-codegen]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.agent-1-testgen.outputs.branch_name }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install backend dependencies
+        run: pip install -r src/backend/requirements.txt
+        continue-on-error: true
+
+      - name: Install frontend dependencies
+        working-directory: src/frontend
+        run: npm ci
+        continue-on-error: true
+
+      - name: Run backend tests
+        run: echo "TODO — run pytest tests/backend/"
+
+      - name: Run frontend tests
+        run: echo "TODO — run vitest tests/frontend/"
+
+  agent-3-review:
+    needs: [agent-1-testgen, post-codegen-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.agent-1-testgen.outputs.branch_name }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: |
+          curl https://cursor.com/install -fsS | bash
+          pip install pyyaml verify-everything
+
+      - name: Install reviewer skills
+        run: echo "1" | curl -fsSL https://raw.githubusercontent.com/imbue-ai/vet/main/install-skill.sh | bash
+
+      - name: Run Agent 3 — Reviewer
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+        run: python scripts/run_agent.py agent-3-review --extra-context "$(git diff main..HEAD)"
+
+      - name: Validate file scope
+        run: scripts/validate_scope.sh agent-3-review
+
+      - name: Upload review report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: review-report
+          path: pipeline/reports/
+
+  open-pr:
+    needs: [agent-1-testgen, agent-3-review]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.agent-1-testgen.outputs.branch_name }}
+
+      - name: Open PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --title "feat: TDD cycle — tests + code from specs [run ${{ github.run_id }}]" \
+            --body "## Auto-generated TDD Cycle
+
+**This is the only human checkpoint in the pipeline.**
+
+### What's in this PR
+- **Tests** generated by agent-1-testgen[bot] from specs
+- **Code** generated by agent-2-codegen[bot] to pass those tests
+- **Review** completed by agent-3-review[bot] (see \`review-report\` artifact)
+
+### Next steps
+1. A Railway sandbox preview will deploy automatically
+2. **Test the app** in the sandbox
+3. **Approve the PR** → triggers Agent 4 to update docs
+4. **Merge** → everything lands on main together" \
+            --base main

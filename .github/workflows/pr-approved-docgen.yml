@@ -8,7 +8,7 @@ jobs:
   agent-4-docgen:
     if: >
       github.event.review.state == 'approved' &&
-      startsWith(github.event.pull_request.head.ref, 'agent/src-')
+      startsWith(github.event.pull_request.head.ref, 'agent/feature-')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

@@ -6,7 +6,7 @@ on:
 
 jobs:
   deploy-preview:
-    if: startsWith(github.head_ref, 'agent/src-') && github.event.action != 'closed'
+    if: startsWith(github.head_ref, 'agent/feature-') && github.event.action != 'closed'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -62,7 +62,7 @@ jobs:
           _Deployed by agent-2-codegen[bot] via Railway — environment \`pr-${{ github.event.number }}\`_"
 
   teardown-preview:
-    if: startsWith(github.head_ref, 'agent/src-') && github.event.action == 'closed'
+    if: startsWith(github.head_ref, 'agent/feature-') && github.event.action == 'closed'
     runs-on: ubuntu-latest
     steps:
       - name: Set up Node

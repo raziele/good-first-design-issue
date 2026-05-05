@@ -24,12 +24,10 @@ jobs:
 
       - name: Deploy backend
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_BACKEND }}
-        run: railway up
-        working-directory: src/backend
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: railway up --service backend
 
       - name: Deploy frontend
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_FRONTEND }}
-        run: railway up
-        working-directory: src/frontend
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: railway up --service frontend

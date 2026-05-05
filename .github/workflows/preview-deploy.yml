@@ -21,24 +21,21 @@ jobs:
 
       - name: Deploy backend to preview
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_BACKEND }}
-        run: railway up --environment pr-${{ github.event.number }}
-        working-directory: src/backend
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: railway up --service backend --environment pr-${{ github.event.number }}
 
       - name: Deploy frontend to preview
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_FRONTEND }}
-        run: railway up --environment pr-${{ github.event.number }}
-        working-directory: src/frontend
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: railway up --service frontend --environment pr-${{ github.event.number }}
 
       - name: Get preview URLs and comment on PR
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RAILWAY_TOKEN_BACKEND: ${{ secrets.RAILWAY_TOKEN_BACKEND }}
-          RAILWAY_TOKEN_FRONTEND: ${{ secrets.RAILWAY_TOKEN_FRONTEND }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          BACKEND_URL=$(RAILWAY_TOKEN=$RAILWAY_TOKEN_BACKEND railway status --environment pr-${{ github.event.number }} --json | jq -r '.url // "pending"')
-          FRONTEND_URL=$(RAILWAY_TOKEN=$RAILWAY_TOKEN_FRONTEND railway status --environment pr-${{ github.event.number }} --json | jq -r '.url // "pending"')
+          BACKEND_URL=$(railway status --service backend --environment pr-${{ github.event.number }} --json | jq -r '.url // "pending"')
+          FRONTEND_URL=$(railway status --service frontend --environment pr-${{ github.event.number }} --json | jq -r '.url // "pending"')
           gh pr comment ${{ github.event.number }} --body "## Sandbox Preview
 
           The preview environment is ready.
@@ -62,14 +59,8 @@ jobs:
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
-      - name: Tear down backend preview
+      - name: Tear down preview environment
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_BACKEND }}
-        run: railway environment delete pr-${{ github.event.number }} --yes
-        continue-on-error: true
-
-      - name: Tear down frontend preview
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_FRONTEND }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: railway environment delete pr-${{ github.event.number }} --yes
         continue-on-error: true

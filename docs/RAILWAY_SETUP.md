@@ -19,22 +19,21 @@ The CI/CD workflows require Railway tokens to be configured as GitHub secrets.
 
 | Secret Name | Description | Source |
 |-------------|-------------|--------|
-| `RAILWAY_TOKEN_BACKEND` | Token for gfdi-backend project | `.secrets/railway-backend` |
-| `RAILWAY_TOKEN_FRONTEND` | Token for gfdi-frontend project | `.secrets/railway-frontend` |
+| `RAILWAY_TOKEN` | Token for good-first-design-issue project | `.secrets/railway-gfdi` |
 
 ### Setting Up Secrets
 
 1. Go to your GitHub repository
 2. Navigate to **Settings** > **Secrets and variables** > **Actions**
 3. Click **New repository secret**
-4. Add each secret with the corresponding value from the `.secrets/` directory
+4. Add `RAILWAY_TOKEN` with the value from `.secrets/railway-gfdi`
 
 ## Environments
 
 | Environment | Trigger | Token Used |
 |-------------|---------|------------|
-| PR Preview (`pr-{number}`) | PRs from `agent/feature-*` branches | Both tokens |
-| Production | Push to main (src/** changes) or manual | Both tokens |
+| PR Preview (`pr-{number}`) | PRs from `agent/feature-*` branches | `RAILWAY_TOKEN` |
+| Production | Push to main (src/** changes) or manual | `RAILWAY_TOKEN` |
 
 ## Health Checks
 

@@ -1,0 +1,40 @@
+name: Production Deploy (Railway)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "railway.json"
+
+jobs:
+  deploy-prod:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy backend to production
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_PROD }}
+        run: |
+          railway up \
+            --service backend \
+            --environment production \
+            --detach
+
+      - name: Deploy frontend to production
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_PROD }}
+        run: |
+          railway up \
+            --service frontend \
+            --environment production \
+            --detach

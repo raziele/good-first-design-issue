@@ -28,6 +28,7 @@ jobs:
           railway up \
             --service backend \
             --environment production \
+            --project 03d6fcee-4574-4039-afc7-47c8726497c4 \
             --detach
 
       - name: Deploy frontend to production
@@ -37,4 +38,5 @@ jobs:
           railway up \
             --service frontend \
             --environment production \
+            --project 03d6fcee-4574-4039-afc7-47c8726497c4 \
             --detach

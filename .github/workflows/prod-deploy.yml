@@ -6,6 +6,7 @@ on:
     paths:
       - "src/**"
       - "railway.json"
+  workflow_dispatch:
 
 jobs:
   deploy-prod:

@@ -1,3 +1,24 @@
+## Learned User Preferences
+
+- DuckDB queries must use `-readonly` flag
+- Run `date` command before executing bash scripts
+- Documentation goes under `docs/`; specs/plans go under `docs/specs`
+- ETL must be runnable from the `etl/` directory (cd etl && uv run etl)
+- Use uv for Python project management
+
+## Learned Workspace Facts
+
+- Level8 is an AI-first TDD project; specs are the source of truth
+- ETL code in `etl/` uses DuckDB (`level8.duckdb`) and `gh` CLI for GitHub API
+- Default model name is `claude-4.6-sonnet-medium`
+- GitHub Search API caps at 1000 results per query; ETL uses date-range bisection
+- Railway deploy workflow triggers only for `agent/feature-*` branches
+- Frontend: Vite + React in `src/frontend/`; Backend: FastAPI in `src/backend/` with `/health` endpoint
+- DuckDB requires `pytz` at runtime for timezone support
+- ETL modes: `--reset` (180 days back, `created:>=`) and default upsert (1 day back, `updated:>=`)
+
+---
+
 # CLAUDE.md — Spec Refinery (Plan Mode)
 
 ## What This Is

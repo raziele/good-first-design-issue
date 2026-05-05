@@ -50,7 +50,7 @@ jobs:
           pip install pyyaml
 
       - name: Install testgen skills
-        run: npx skills@latest add mattpocock/skills/tdd --yes
+        run: npx skills@latest add https://github.com/mattpocock/skills/blob/main/skills/engineering/tdd/ --yes
 
       - name: Run Agent 1 — Test Generator
         env:

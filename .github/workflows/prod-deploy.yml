@@ -22,18 +22,7 @@ jobs:
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
-      - name: Deploy backend to production
+      - name: Deploy to production
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_PROD }}
-        run: |
-          railway link --project 03d6fcee-4574-4039-afc7-47c8726497c4
-          railway up --environment production --detach
-        working-directory: src/backend
-
-      - name: Deploy frontend to production
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_PROD }}
-        run: |
-          railway link --project 03d6fcee-4574-4039-afc7-47c8726497c4
-          railway up --environment production --detach
-        working-directory: src/frontend
+        run: railway deploy --detach

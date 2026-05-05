@@ -2,9 +2,19 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "echo 'TODO: configure dev server'",
-    "build": "echo 'TODO: configure build'",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "test": "echo 'TODO: configure test runner'"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.2"
   }
 }

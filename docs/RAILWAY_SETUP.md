@@ -19,8 +19,8 @@ The CI/CD workflows require Railway tokens to be configured as GitHub secrets.
 
 | Secret Name | Description | Source |
 |-------------|-------------|--------|
-| `RAILWAY_TOKEN` | Token for staging/preview deployments | `.secrets/railway-stag` |
-| `RAILWAY_TOKEN_PROD` | Token for production deployments | `.secrets/railway-prod` |
+| `RAILWAY_TOKEN_BACKEND` | Token for gfdi-backend project | `.secrets/railway-backend` |
+| `RAILWAY_TOKEN_FRONTEND` | Token for gfdi-frontend project | `.secrets/railway-frontend` |
 
 ### Setting Up Secrets
 
@@ -33,8 +33,8 @@ The CI/CD workflows require Railway tokens to be configured as GitHub secrets.
 
 | Environment | Trigger | Token Used |
 |-------------|---------|------------|
-| PR Preview (`pr-{number}`) | PRs from `agent/feature-*` branches | `RAILWAY_TOKEN` |
-| Production | Manual / main branch (future) | `RAILWAY_TOKEN_PROD` |
+| PR Preview (`pr-{number}`) | PRs from `agent/feature-*` branches | Both tokens |
+| Production | Push to main (src/** changes) or manual | Both tokens |
 
 ## Health Checks
 

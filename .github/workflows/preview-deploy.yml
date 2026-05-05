@@ -23,11 +23,13 @@ jobs:
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: railway up --service backend --environment pr-${{ github.event.number }}
+        working-directory: src/backend
 
       - name: Deploy frontend to preview
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: railway up --service frontend --environment pr-${{ github.event.number }}
+        working-directory: src/frontend
 
       - name: Get preview URLs and comment on PR
         env:

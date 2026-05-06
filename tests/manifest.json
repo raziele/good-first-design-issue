@@ -1,5 +1,294 @@
 {
-  "mappings": [],
+  "generated_at": "2026-05-06T21:51:00Z",
+  "mappings": [
+    {
+      "spec_file": "specs/behavior/issues.spec.md",
+      "rules": [
+        {
+          "rule_id": "RULE-ISS-001",
+          "title": "Display only relevant active issues",
+          "tests": [
+            "tests/backend/test_issues.py::test_issue_listing_relevant_active_issue_appears",
+            "tests/backend/test_issues.py::test_issue_listing_not_relevant_issue_is_hidden",
+            "tests/backend/test_issues.py::test_issue_listing_archived_issue_is_hidden",
+            "tests/frontend/Issues.browse.test.ts::Issues.browse — RULE-ISS-001::relevant active issue appears in listing",
+            "tests/frontend/Issues.browse.test.ts::Issues.browse — RULE-ISS-001::not-relevant issue is hidden",
+            "tests/frontend/Issues.browse.test.ts::Issues.browse — RULE-ISS-001::archived issue is hidden from main listing",
+            "tests/e2e/browse-issues.e2e.test.ts::browse-issues: listing shows relevant active issue cards"
+          ]
+        },
+        {
+          "rule_id": "RULE-ISS-002",
+          "title": "Issue card displays preview information",
+          "tests": [
+            "tests/backend/test_issues.py::test_card_shows_required_elements",
+            "tests/backend/test_issues.py::test_card_description_truncated_to_200_chars",
+            "tests/backend/test_issues.py::test_card_shows_media_indicator_when_has_media",
+            "tests/backend/test_issues.py::test_card_no_media_indicator_when_no_media",
+            "tests/frontend/Issues.browse.test.ts::Issues.browse — RULE-ISS-002::card shows all required elements",
+            "tests/frontend/Issues.browse.test.ts::Issues.browse — RULE-ISS-002::description_truncated is at most 200 characters",
+            "tests/frontend/Issues.browse.test.ts::Issues.browse — RULE-ISS-002::media indicator shown when has_media is true",
+            "tests/e2e/browse-issues.e2e.test.ts::browse-issues: issue card shows repo name, title, and scores",
+            "tests/e2e/browse-issues.e2e.test.ts::browse-issues: media indicator shown when has_media is true"
+          ]
+        },
+        {
+          "rule_id": "RULE-ISS-003",
+          "title": "Issue detail view shows full information",
+          "tests": [
+            "tests/backend/test_issues.py::test_detail_view_shows_full_description",
+            "tests/backend/test_issues.py::test_detail_view_shows_all_attribute_scores",
+            "tests/backend/test_issues.py::test_detail_view_shows_repo_stars",
+            "tests/backend/test_issues.py::test_detail_view_provides_github_link",
+            "tests/backend/test_issues.py::test_detail_view_media_indicated_not_embedded",
+            "tests/frontend/Issues.browse.test.ts::Issues.browse — RULE-ISS-003::detail view shows full (non-truncated) description",
+            "tests/e2e/browse-issues.e2e.test.ts::browse-issues: clicking a card navigates to detail view",
+            "tests/e2e/browse-issues.e2e.test.ts::browse-issues: detail view shows full description and github link"
+          ]
+        },
+        {
+          "rule_id": "RULE-ISS-004",
+          "title": "Claimed issues are marked",
+          "tests": [
+            "tests/backend/test_issues.py::test_claimed_issue_has_is_claimed_flag",
+            "tests/backend/test_issues.py::test_claimed_issue_still_appears_in_listing",
+            "tests/frontend/Issues.browse.test.ts::Issues.browse — RULE-ISS-004::claimed issue has is_claimed flag set to true",
+            "tests/e2e/browse-issues.e2e.test.ts::browse-issues: claimed issue shows 'Already claimed' badge"
+          ]
+        },
+        {
+          "rule_id": "RULE-ISS-005",
+          "title": "Default sort is by freshness",
+          "tests": [
+            "tests/backend/test_issues.py::test_default_sort_is_freshness_ascending",
+            "tests/frontend/Issues.browse.test.ts::Issues.browse — RULE-ISS-005::issues sorted by freshness_days ascending",
+            "tests/e2e/browse-issues.e2e.test.ts::browse-issues: issues sorted by freshness (newest first) by default"
+          ]
+        }
+      ]
+    },
+    {
+      "spec_file": "specs/behavior/search.spec.md",
+      "rules": [
+        {
+          "rule_id": "RULE-SRC-001",
+          "title": "Full-text search across title and description",
+          "tests": [
+            "tests/backend/test_search.py::test_search_matches_title",
+            "tests/backend/test_search.py::test_search_matches_description",
+            "tests/backend/test_search.py::test_search_returns_no_results_when_no_match",
+            "tests/backend/test_search.py::test_search_is_case_insensitive",
+            "tests/frontend/Search.filter.test.ts::Search.filter — RULE-SRC-001::search matches title",
+            "tests/frontend/Search.filter.test.ts::Search.filter — RULE-SRC-001::search returns empty when no match",
+            "tests/e2e/search.e2e.test.ts::search: typing a query filters issues by title match",
+            "tests/e2e/search.e2e.test.ts::search: typing a query filters issues by description match",
+            "tests/e2e/search.e2e.test.ts::search: no results shows empty state message"
+          ]
+        },
+        {
+          "rule_id": "RULE-SRC-002",
+          "title": "Filter by freshness",
+          "tests": [
+            "tests/backend/test_search.py::test_freshness_filter_options[Last 7 days-7-expected_ids0]",
+            "tests/backend/test_search.py::test_freshness_filter_options[Last 30 days-30-expected_ids1]",
+            "tests/backend/test_search.py::test_freshness_filter_options[Last 90 days-90-expected_ids2]",
+            "tests/backend/test_search.py::test_freshness_filter_options[All time-None-expected_ids3]",
+            "tests/backend/test_search.py::test_filter_recent_issues_last_7_days",
+            "tests/frontend/Search.filter.test.ts::Search.filter — RULE-SRC-002::freshness filter: Last 7 days shows correct issues",
+            "tests/e2e/search.e2e.test.ts::search: filter 'Last 7 days' shows only fresh issues",
+            "tests/e2e/search.e2e.test.ts::search: filter 'All time' shows all issues"
+          ]
+        },
+        {
+          "rule_id": "RULE-SRC-003",
+          "title": "Search and filter combine (AND logic)",
+          "tests": [
+            "tests/backend/test_search.py::test_combined_search_and_filter",
+            "tests/backend/test_search.py::test_combined_search_and_filter_no_results",
+            "tests/frontend/Search.filter.test.ts::Search.filter — RULE-SRC-003::combined search and filter applies AND logic",
+            "tests/e2e/search.e2e.test.ts::search: combined query and freshness filter applies AND logic"
+          ]
+        },
+        {
+          "rule_id": "RULE-SRC-004",
+          "title": "Mobile uses bottom sheet for filters",
+          "tests": [
+            "tests/frontend/Search.filter.test.ts::Search.filter — RULE-SRC-004::mobile filter interaction shows bottom sheet",
+            "tests/e2e/search.e2e.test.ts::search: mobile viewport opens bottom sheet on filter tap",
+            "tests/e2e/search.e2e.test.ts::search: mobile bottom sheet swipe-down closes it",
+            "tests/e2e/search.e2e.test.ts::search: mobile bottom sheet has min 44px tap targets"
+          ]
+        }
+      ]
+    },
+    {
+      "spec_file": "specs/behavior/claim.spec.md",
+      "rules": [
+        {
+          "rule_id": "RULE-CLM-001",
+          "title": "Claim action offers two options",
+          "tests": [
+            "tests/frontend/Claim.action.test.ts::Claim.action — RULE-CLM-001::go-to-github path builds a pre-filled comment URL",
+            "tests/frontend/Claim.action.test.ts::Claim.action — RULE-CLM-001::copy-comment path calls clipboard with the claim comment",
+            "tests/e2e/claim-issue.e2e.test.ts::claim-issue: clicking Claim This Task opens options modal",
+            "tests/e2e/claim-issue.e2e.test.ts::claim-issue: modal shows both Go to GitHub and Copy comment options",
+            "tests/e2e/claim-issue.e2e.test.ts::claim-issue: Go to GitHub opens GitHub with pre-filled comment",
+            "tests/e2e/claim-issue.e2e.test.ts::claim-issue: Copy comment writes claim comment to clipboard"
+          ]
+        },
+        {
+          "rule_id": "RULE-CLM-002",
+          "title": "Claim comment is AI-generated",
+          "tests": [
+            "tests/frontend/Claim.action.test.ts::Claim.action — RULE-CLM-002::claim comment mentions design or UX intent",
+            "tests/frontend/Claim.action.test.ts::Claim.action — RULE-CLM-002::claim comment is not a fixed template"
+          ]
+        },
+        {
+          "rule_id": "RULE-CLM-003",
+          "title": "No local claim tracking",
+          "tests": [
+            "tests/frontend/Claim.action.test.ts::Claim.action — RULE-CLM-003::claim action does not write to local database",
+            "tests/e2e/claim-issue.e2e.test.ts::claim-issue: claim action does not POST to local /claims endpoint"
+          ]
+        },
+        {
+          "rule_id": "RULE-CLM-004",
+          "title": "Multiple users can claim same issue",
+          "tests": [
+            "tests/frontend/Claim.action.test.ts::Claim.action — RULE-CLM-004::claimed issue still shows claim CTA without blocking",
+            "tests/e2e/claim-issue.e2e.test.ts::claim-issue: already-claimed issue shows badge but CTA is not blocked"
+          ]
+        }
+      ]
+    },
+    {
+      "spec_file": "specs/behavior/classification.spec.md",
+      "rules": [
+        {
+          "rule_id": "RULE-CLS-001",
+          "title": "Classification is fully automated",
+          "tests": [
+            "tests/backend/test_classification.py::test_design_issue_classified_as_relevant",
+            "tests/backend/test_classification.py::test_backend_issue_classified_as_not_relevant",
+            "tests/backend/test_classification.py::test_classification_value_is_valid_enum"
+          ]
+        },
+        {
+          "rule_id": "RULE-CLS-002",
+          "title": "Empty descriptions are not relevant",
+          "tests": [
+            "tests/backend/test_classification.py::test_empty_description_classified_not_relevant",
+            "tests/backend/test_classification.py::test_placeholder_only_description_classified_not_relevant",
+            "tests/backend/test_classification.py::test_description_empty_string_is_falsy",
+            "tests/backend/test_classification.py::test_placeholder_description_has_no_real_content"
+          ]
+        },
+        {
+          "rule_id": "RULE-CLS-003",
+          "title": "Already-claimed issues remain relevant but flagged",
+          "tests": [
+            "tests/backend/test_classification.py::test_claimed_design_issue_stays_relevant_but_flagged",
+            "tests/backend/test_classification.py::test_claimed_flag_does_not_override_classification"
+          ]
+        },
+        {
+          "rule_id": "RULE-CLS-004",
+          "title": "Classification exclusion rules",
+          "tests": [
+            "tests/backend/test_classification.py::test_exclusion_by_category_classified_not_relevant[test coverage, unit test, QA case]",
+            "tests/backend/test_classification.py::test_exclusion_by_category_classified_not_relevant[api endpoint, backend, database migration]",
+            "tests/backend/test_classification.py::test_exclusion_by_category_classified_not_relevant[refactor, rename X to Y]",
+            "tests/backend/test_classification.py::test_exclusion_by_category_classified_not_relevant[implement in code, code base for]",
+            "tests/backend/test_classification.py::test_exclusion_by_category_classified_not_relevant[sprite sheet, UTF files, game assets]"
+          ]
+        }
+      ]
+    },
+    {
+      "spec_file": "specs/behavior/etl.spec.md",
+      "rules": [
+        {
+          "rule_id": "RULE-ETL-001",
+          "title": "Daily automated refresh",
+          "tests": [
+            "tests/backend/test_etl.py::test_daily_run_adds_new_issues"
+          ]
+        },
+        {
+          "rule_id": "RULE-ETL-002",
+          "title": "Issues older than 90 days excluded on initial fetch",
+          "tests": [
+            "tests/backend/test_etl.py::test_old_issue_excluded_on_initial_fetch",
+            "tests/backend/test_etl.py::test_recent_issue_included_on_initial_fetch",
+            "tests/backend/test_etl.py::test_exactly_90_days_old_is_included",
+            "tests/backend/test_etl.py::test_91_days_old_is_excluded"
+          ]
+        },
+        {
+          "rule_id": "RULE-ETL-003",
+          "title": "Existing issues are updated",
+          "tests": [
+            "tests/backend/test_etl.py::test_issue_description_updated_on_refresh",
+            "tests/backend/test_etl.py::test_enrichment_recalculated_on_update"
+          ]
+        },
+        {
+          "rule_id": "RULE-ETL-004",
+          "title": "Closed issues are archived",
+          "tests": [
+            "tests/backend/test_etl.py::test_closed_issue_moves_to_archived",
+            "tests/backend/test_etl.py::test_open_issue_stays_active",
+            "tests/backend/test_etl.py::test_archived_issue_excluded_from_main_listing"
+          ]
+        },
+        {
+          "rule_id": "RULE-ETL-005",
+          "title": "Enrichment generates AI attributes",
+          "tests": [
+            "tests/backend/test_etl.py::test_enrichment_populates_complexity_score",
+            "tests/backend/test_etl.py::test_enrichment_populates_attractiveness_rating",
+            "tests/backend/test_etl.py::test_enrichment_populates_seniority_level",
+            "tests/backend/test_etl.py::test_complexity_score_valid_enum_values[low]",
+            "tests/backend/test_etl.py::test_complexity_score_valid_enum_values[medium]",
+            "tests/backend/test_etl.py::test_complexity_score_valid_enum_values[high]",
+            "tests/backend/test_etl.py::test_seniority_level_valid_enum_values[junior]",
+            "tests/backend/test_etl.py::test_seniority_level_valid_enum_values[senior]"
+          ]
+        },
+        {
+          "rule_id": "RULE-ETL-006",
+          "title": "Media detection",
+          "tests": [
+            "tests/backend/test_etl.py::test_issue_with_image_markdown_has_media",
+            "tests/backend/test_etl.py::test_issue_with_plain_text_has_no_media",
+            "tests/backend/test_etl.py::test_issue_with_http_link_has_media",
+            "tests/backend/test_etl.py::test_issue_with_only_text_and_headings_no_media"
+          ]
+        }
+      ]
+    },
+    {
+      "spec_file": "specs/api/openapi.yaml",
+      "notes": "API spec is currently a stub (paths: {}). No contract tests generated. Will be populated when endpoints are defined.",
+      "rules": []
+    }
+  ],
   "unmapped_specs": [],
-  "orphaned_tests": []
+  "orphaned_tests": [],
+  "summary": {
+    "total_rules": 18,
+    "total_tests": 78,
+    "coverage_by_type": {
+      "backend_pytest": 46,
+      "frontend_vitest": 22,
+      "e2e_playwright": 20
+    },
+    "rules_with_todo_comments": [
+      "RULE-CLM-002 (AI comment generation — wired to stub, not live AI call)",
+      "RULE-CLM-003 (local DB write — no endpoint yet)",
+      "RULE-SRC-004 (bottom sheet component — E2E skeleton)",
+      "browse-issues flow loading state (IssueList component not yet built)"
+    ]
+  }
 }

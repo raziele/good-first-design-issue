@@ -10,4 +10,14 @@ export default defineConfig({
     port: 4173,
     host: true,
   },
+  test: {
+    environment: "jsdom",
+    include: ["../../tests/frontend/**/*.test.ts", "../../tests/frontend/**/*.test.tsx"],
+    globals: true,
+  },
+  server: {
+    fs: {
+      allow: ["/home/runner/work/good-first-design-issue/good-first-design-issue"],
+    },
+  },
 });

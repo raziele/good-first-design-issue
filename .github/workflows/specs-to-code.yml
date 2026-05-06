@@ -193,7 +193,7 @@ jobs:
           pip install pyyaml verify-everything
 
       - name: Install reviewer skills
-        run: echo "1" | curl -fsSL https://raw.githubusercontent.com/imbue-ai/vet/main/install-skill.sh | bash
+        run: npx skills@latest add https://github.com/imbue-ai/vet --yes
 
       - name: Run Agent 3 — Reviewer
         env:

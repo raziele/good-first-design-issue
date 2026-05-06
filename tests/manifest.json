@@ -1,5 +1,285 @@
 {
-  "mappings": [],
-  "unmapped_specs": [],
+  "generated_at": "2026-05-06",
+  "mappings": [
+    {
+      "spec": "specs/behavior/etl.spec.md",
+      "rules": ["RULE-ETL-001", "RULE-ETL-002", "RULE-ETL-003", "RULE-ETL-004", "RULE-ETL-005", "RULE-ETL-006"],
+      "tests": [
+        {
+          "file": "tests/backend/unit/test_etl.py",
+          "type": "backend_unit",
+          "coverage": {
+            "RULE-ETL-001": ["NOTE: Daily scheduler trigger — no unit test; covered by CI schedule config"],
+            "RULE-ETL-002": [
+              "TestEtlAgeFilter::test_etl_age_filter_old_issue_excluded_on_initial_fetch",
+              "TestEtlAgeFilter::test_etl_age_filter_recent_issue_included_on_initial_fetch",
+              "TestEtlAgeFilter::test_etl_age_filter_boundary_exactly_90_days"
+            ],
+            "RULE-ETL-003": [
+              "TestEtlIssueUpdate::test_etl_issue_update_description_refreshed",
+              "TestEtlIssueUpdate::test_etl_issue_update_labels_refreshed"
+            ],
+            "RULE-ETL-004": [
+              "TestEtlArchiving::test_etl_archiving_closed_issue_becomes_archived",
+              "TestEtlArchiving::test_etl_archiving_open_issue_stays_active"
+            ],
+            "RULE-ETL-005": [
+              "TestEtlEnrichment::test_etl_enrichment_attributes_populated_for_relevant_issue",
+              "TestEtlEnrichment::test_etl_enrichment_attractiveness_rating_range"
+            ],
+            "RULE-ETL-006": [
+              "TestEtlMediaDetection::test_etl_media_detection_image_markdown_sets_has_media_true",
+              "TestEtlMediaDetection::test_etl_media_detection_plain_text_sets_has_media_false",
+              "TestEtlMediaDetection::test_etl_media_detection_external_link_sets_has_media_true",
+              "TestEtlMediaDetection::test_etl_media_detection_empty_description"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "spec": "specs/behavior/classification.spec.md",
+      "rules": ["RULE-CLS-001", "RULE-CLS-002", "RULE-CLS-003", "RULE-CLS-004"],
+      "tests": [
+        {
+          "file": "tests/backend/unit/test_classification.py",
+          "type": "backend_unit",
+          "coverage": {
+            "RULE-CLS-001": [
+              "TestClassificationRelevance::test_classification_design_issue_classified_as_relevant",
+              "TestClassificationRelevance::test_classification_backend_issue_classified_as_not_relevant"
+            ],
+            "RULE-CLS-002": [
+              "TestClassificationEmptyDescription::test_classification_empty_description_is_not_relevant",
+              "TestClassificationEmptyDescription::test_classification_placeholder_only_description_is_not_relevant",
+              "TestClassificationEmptyDescription::test_classification_whitespace_only_description_is_not_relevant"
+            ],
+            "RULE-CLS-003": [
+              "TestClassificationClaimedIssues::test_classification_claimed_design_issue_flagged_not_downgraded",
+              "TestClassificationClaimedIssues::test_classification_unclaimed_issue_not_flagged"
+            ],
+            "RULE-CLS-004": [
+              "TestClassificationExclusions::test_classification_exclusion_by_category[test coverage, unit test, QA case-...]",
+              "TestClassificationExclusions::test_classification_exclusion_by_category[api endpoint, backend, database migration-...]",
+              "TestClassificationExclusions::test_classification_exclusion_by_category[refactor, rename X to Y-...]",
+              "TestClassificationExclusions::test_classification_exclusion_by_category[implement in code, code base for-...]",
+              "TestClassificationExclusions::test_classification_exclusion_by_category[sprite sheet, UTF files, game assets-...]"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "spec": "specs/behavior/issues.spec.md",
+      "rules": ["RULE-ISS-001", "RULE-ISS-002", "RULE-ISS-003", "RULE-ISS-004", "RULE-ISS-005"],
+      "tests": [
+        {
+          "file": "tests/backend/unit/test_issues.py",
+          "type": "backend_unit",
+          "coverage": {
+            "RULE-ISS-001": [
+              "TestIssueListingFilter::test_issues_listing_filter_relevant_active_issue_appears",
+              "TestIssueListingFilter::test_issues_listing_filter_not_relevant_issue_hidden",
+              "TestIssueListingFilter::test_issues_listing_filter_archived_issue_hidden",
+              "TestIssueListingFilter::test_issues_listing_filter_closed_status_hidden",
+              "TestIssueListingFilter::test_issues_listing_filter_mixed_set"
+            ],
+            "RULE-ISS-002": [
+              "TestIssueCardContent::test_issues_card_shows_required_elements",
+              "TestIssueCardContent::test_issues_card_shows_media_indicator_when_has_media",
+              "TestIssueCardContent::test_issues_card_hides_media_indicator_when_no_media",
+              "TestIssueCardContent::test_issues_card_truncates_description_at_200_chars"
+            ],
+            "RULE-ISS-003": [
+              "TestIssueDetailView::test_issues_detail_view_shows_full_description",
+              "TestIssueDetailView::test_issues_detail_view_media_indicated_not_embedded"
+            ],
+            "RULE-ISS-004": [
+              "TestClaimedIssueDisplay::test_issues_claimed_badge_shown_when_is_claimed_true",
+              "TestClaimedIssueDisplay::test_issues_claimed_badge_absent_when_not_claimed"
+            ],
+            "RULE-ISS-005": [
+              "TestIssueDefaultSort::test_issues_default_sort_by_freshness_ascending",
+              "TestIssueDefaultSort::test_issues_default_sort_ties_stable"
+            ]
+          }
+        },
+        {
+          "file": "tests/frontend/component/IssueCard.spec.test.ts",
+          "type": "frontend_component",
+          "coverage": {
+            "RULE-ISS-002": ["IssueCard.*"],
+            "RULE-ISS-004": ["IssueCard.showsClaimedBadge*", "IssueCard.hidesClaimedBadge*"]
+          }
+        },
+        {
+          "file": "tests/frontend/component/IssueDetail.spec.test.ts",
+          "type": "frontend_component",
+          "coverage": {
+            "RULE-ISS-003": ["IssueDetail.*"],
+            "RULE-ISS-004": ["IssueDetail.showsAlreadyClaimedBadge*", "IssueDetail.claimCta*"]
+          }
+        },
+        {
+          "file": "tests/frontend/e2e/browse-issues.e2e.test.ts",
+          "type": "frontend_e2e",
+          "coverage": {
+            "RULE-ISS-001": ["browseIssues.displaysOnlyRelevantActiveIssues"],
+            "RULE-ISS-002": ["browseIssues.cardShowsRequiredFields"],
+            "RULE-ISS-005": ["browseIssues.issuesSortedByFreshnessByDefault"]
+          }
+        }
+      ]
+    },
+    {
+      "spec": "specs/behavior/search.spec.md",
+      "rules": ["RULE-SRC-001", "RULE-SRC-002", "RULE-SRC-003", "RULE-SRC-004"],
+      "tests": [
+        {
+          "file": "tests/backend/unit/test_search.py",
+          "type": "backend_unit",
+          "coverage": {
+            "RULE-SRC-001": [
+              "TestSearchFullText::test_search_full_text_matches_title",
+              "TestSearchFullText::test_search_full_text_matches_description",
+              "TestSearchFullText::test_search_full_text_returns_empty_state_for_no_match",
+              "TestSearchFullText::test_search_full_text_case_insensitive",
+              "TestSearchFullText::test_search_full_text_short_query_no_results",
+              "TestSearchFullText::test_search_full_text_special_characters_escaped"
+            ],
+            "RULE-SRC-002": [
+              "TestSearchFreshnessFilter::test_search_freshness_filter_last_7_days",
+              "TestSearchFreshnessFilter::test_search_freshness_filter_options[Last 7 days-7]",
+              "TestSearchFreshnessFilter::test_search_freshness_filter_options[Last 30 days-30]",
+              "TestSearchFreshnessFilter::test_search_freshness_filter_options[Last 90 days-90]",
+              "TestSearchFreshnessFilter::test_search_freshness_filter_all_time_returns_all",
+              "TestSearchFreshnessFilter::test_search_freshness_filter_boundary_inclusive"
+            ],
+            "RULE-SRC-003": [
+              "TestSearchCombined::test_search_combined_search_and_filter",
+              "TestSearchCombined::test_search_combined_no_results_when_filter_eliminates_match",
+              "TestSearchCombined::test_search_combined_empty_query_with_filter"
+            ],
+            "RULE-SRC-004": ["NOTE: Mobile bottom sheet — covered by frontend tests only"]
+          }
+        },
+        {
+          "file": "tests/frontend/component/SearchBar.spec.test.ts",
+          "type": "frontend_component",
+          "coverage": {
+            "RULE-SRC-001": ["SearchBar.*search*"],
+            "RULE-SRC-002": ["SearchBar.*filter*", "SearchBar.*Freshness*"],
+            "RULE-SRC-003": ["SearchBar.*combined*", "SearchBar.*BothQueryAndFilter*"],
+            "RULE-SRC-004": ["SearchBar.*BottomSheet*", "SearchBar.*Mobile*"]
+          }
+        },
+        {
+          "file": "tests/frontend/e2e/search.e2e.test.ts",
+          "type": "frontend_e2e",
+          "coverage": {
+            "RULE-SRC-001": ["search.typingQueryUpdatesResults", "search.emptyResultsShowNoMatchesMessage"],
+            "RULE-SRC-002": ["search.selectingLast7DaysFilterUpdatesResults", "search.allTimeFilterShowsAllResults"],
+            "RULE-SRC-003": ["search.combinedQueryAndFilterAppliesAndLogic"],
+            "RULE-SRC-004": ["search.mobileFilterButtonOpensBottomSheet"]
+          }
+        }
+      ]
+    },
+    {
+      "spec": "specs/behavior/claim.spec.md",
+      "rules": ["RULE-CLM-001", "RULE-CLM-002", "RULE-CLM-003", "RULE-CLM-004"],
+      "tests": [
+        {
+          "file": "tests/backend/unit/test_claim.py",
+          "type": "backend_unit",
+          "coverage": {
+            "RULE-CLM-001": [
+              "TestClaimOptions::test_claim_options_go_to_github_redirects_with_prefilled_comment",
+              "TestClaimOptions::test_claim_options_copy_comment_returns_comment_text"
+            ],
+            "RULE-CLM-002": [
+              "TestClaimCommentGeneration::test_claim_comment_generation_reflects_issue_context",
+              "TestClaimCommentGeneration::test_claim_comment_generation_different_issues_produce_different_comments"
+            ],
+            "RULE-CLM-003": [
+              "TestClaimNoLocalTracking::test_claim_no_local_tracking_does_not_create_db_record",
+              "TestClaimNoLocalTracking::test_claim_no_local_tracking_is_claimed_updated_via_etl_only"
+            ],
+            "RULE-CLM-004": [
+              "TestClaimMultipleUsers::test_claim_multiple_users_second_user_sees_same_options",
+              "TestClaimMultipleUsers::test_claim_multiple_users_already_claimed_issue_still_offers_options"
+            ]
+          }
+        },
+        {
+          "file": "tests/frontend/component/ClaimModal.spec.test.ts",
+          "type": "frontend_component",
+          "coverage": {
+            "RULE-CLM-001": ["ClaimModal.opensWithTwoOptions", "ClaimModal.pathGoToGithub*", "ClaimModal.pathCopyComment*"],
+            "RULE-CLM-002": ["ClaimModal.claimCommentIsNonEmpty"],
+            "RULE-CLM-004": ["ClaimModal.notBlockedWhenIssueAlreadyClaimed"]
+          }
+        },
+        {
+          "file": "tests/frontend/e2e/claim-issue.e2e.test.ts",
+          "type": "frontend_e2e",
+          "coverage": {
+            "RULE-CLM-001": ["claimIssue.clickingClaimCtaOpensModal", "claimIssue.pathGoToGithub*", "claimIssue.pathCopyComment*"],
+            "RULE-CLM-003": ["claimIssue.claimActionDoesNotWriteToLocalDb"],
+            "RULE-CLM-004": ["claimIssue.alreadyClaimedIssueSetsClaimedBadgeAndKeepsCta"]
+          }
+        }
+      ]
+    },
+    {
+      "spec": "specs/api/openapi.yaml",
+      "rules": [],
+      "tests": [
+        {
+          "file": "tests/backend/contract/test_api_contract.py",
+          "type": "backend_contract",
+          "notes": "Spec has no paths defined yet. Contract tests are skipped/stubbed. Add cases when endpoints are specified."
+        }
+      ]
+    },
+    {
+      "spec": "specs/uxi/flows/browse-issues.flow.md",
+      "rules": [],
+      "tests": [
+        {
+          "file": "tests/frontend/e2e/browse-issues.e2e.test.ts",
+          "type": "frontend_e2e"
+        }
+      ]
+    },
+    {
+      "spec": "specs/uxi/flows/claim-issue.flow.md",
+      "rules": [],
+      "tests": [
+        {
+          "file": "tests/frontend/e2e/claim-issue.e2e.test.ts",
+          "type": "frontend_e2e"
+        }
+      ]
+    },
+    {
+      "spec": "specs/uxi/flows/search.flow.md",
+      "rules": [],
+      "tests": [
+        {
+          "file": "tests/frontend/e2e/search.e2e.test.ts",
+          "type": "frontend_e2e"
+        }
+      ]
+    }
+  ],
+  "unmapped_specs": [
+    "specs/brand/visual-identity.md",
+    "specs/brand/voice-and-tone.md",
+    "specs/chapters/glossary.md",
+    "specs/chapters/domain-model.md",
+    "specs/spec-schema.md",
+    "specs/ai-first-tdd-project-guide.md"
+  ],
   "orphaned_tests": []
 }

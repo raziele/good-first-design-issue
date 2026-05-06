@@ -239,7 +239,20 @@ jobs:
           4. **Merge** -> everything lands on main together
           EOF
           )"
-          gh pr create \
+          set +e
+          PR_OUTPUT="$(gh pr create \
             --title "feat: TDD cycle — tests + code from specs [run ${{ github.run_id }}]" \
             --body "$PR_BODY" \
-            --base main
+            --base main 2>&1)"
+          PR_EXIT=$?
+          set -e
+
+          if [ "$PR_EXIT" -eq 0 ]; then
+            echo "$PR_OUTPUT"
+          elif echo "$PR_OUTPUT" | grep -q "GitHub Actions is not permitted to create or approve pull requests"; then
+            echo "PR creation skipped by repository policy; continuing pipeline."
+            echo "$PR_OUTPUT"
+          else
+            echo "$PR_OUTPUT"
+            exit "$PR_EXIT"
+          fi

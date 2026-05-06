@@ -79,8 +79,79 @@ jobs:
             echo "has_changes=true" >> "$GITHUB_OUTPUT"
           fi
 
-  agent_2_codegen:
+  pre_codegen_red_phase:
     needs: agent_1_testgen
+    if: needs.agent_1_testgen.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.agent_1_testgen.outputs.branch_name }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install backend dependencies
+        run: pip install -r src/backend/requirements.txt
+        continue-on-error: true
+
+      - name: Install frontend dependencies
+        working-directory: src/frontend
+        run: npm ci
+        continue-on-error: true
+
+      - name: Verify red phase (all generated tests must fail pre-codegen)
+        run: |
+          ran_any=0
+          failing_checks=0
+
+          if [ -d tests/backend ] || [ -d src/backend/tests ]; then
+            ran_any=1
+            set +e
+            pytest tests/backend src/backend/tests
+            rc=$?
+            set -e
+            if [ "$rc" -ne 0 ]; then
+              failing_checks=$((failing_checks + 1))
+            else
+              echo "Backend generated tests unexpectedly passed pre-codegen."
+            fi
+          fi
+
+          if [ -d tests/frontend ]; then
+            ran_any=1
+            set +e
+            npm test --prefix src/frontend
+            rc=$?
+            set -e
+            if [ "$rc" -ne 0 ]; then
+              failing_checks=$((failing_checks + 1))
+            else
+              echo "Frontend generated tests unexpectedly passed pre-codegen."
+            fi
+          fi
+
+          if [ "$ran_any" -eq 0 ]; then
+            echo "Red phase gate failed: no runnable generated tests were found."
+            exit 1
+          fi
+
+          if [ "$failing_checks" -ne "$ran_any" ]; then
+            echo "Red phase gate failed: all generated test checks must fail before codegen (failed $failing_checks of $ran_any)."
+            exit 1
+          fi
+
+          echo "Red phase confirmed: all generated test checks failed pre-codegen."
+
+  agent_2_codegen:
+    needs: [agent_1_testgen, pre_codegen_red_phase]
     if: needs.agent_1_testgen.outputs.has_changes == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -198,7 +269,9 @@ jobs:
       - name: Run Agent 3 — Reviewer
         env:
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
-        run: python scripts/run_agent.py agent-3-review --extra-context "$(git diff main..HEAD)"
+        run: |
+          git fetch origin main --depth=1
+          python scripts/run_agent.py agent-3-review --extra-context "$(git diff origin/main...HEAD)"
 
       - name: Validate file scope
         run: scripts/validate_scope.sh agent-3-review
@@ -239,20 +312,7 @@ jobs:
           4. **Merge** -> everything lands on main together
           EOF
           )"
-          set +e
-          PR_OUTPUT="$(gh pr create \
+          gh pr create \
             --title "feat: TDD cycle — tests + code from specs [run ${{ github.run_id }}]" \
             --body "$PR_BODY" \
-            --base main 2>&1)"
-          PR_EXIT=$?
-          set -e
-
-          if [ "$PR_EXIT" -eq 0 ]; then
-            echo "$PR_OUTPUT"
-          elif echo "$PR_OUTPUT" | grep -q "GitHub Actions is not permitted to create or approve pull requests"; then
-            echo "PR creation skipped by repository policy; continuing pipeline."
-            echo "$PR_OUTPUT"
-          else
-            echo "$PR_OUTPUT"
-            exit "$PR_EXIT"
-          fi
+            --base main

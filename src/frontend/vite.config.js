@@ -10,4 +10,8 @@ export default defineConfig({
     port: 4173,
     host: true,
   },
+  test: {
+    include: ["../../tests/frontend/component/**/*.test.ts", "../../tests/frontend/unit/**/*.test.ts"],
+    environment: "node",
+  },
 });

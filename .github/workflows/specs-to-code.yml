@@ -99,56 +99,63 @@ jobs:
           node-version: "20"
 
       - name: Install backend dependencies
-        run: pip install -r src/backend/requirements.txt
-        continue-on-error: true
+        run: |
+          pip install pytest
+          pip install -r src/backend/requirements.txt
 
       - name: Install frontend dependencies
         working-directory: src/frontend
         run: npm ci
-        continue-on-error: true
 
       - name: Verify red phase (all generated tests must fail pre-codegen)
+        env:
+          PYTHONPATH: ${{ github.workspace }}/src/backend
         run: |
           ran_any=0
           failing_checks=0
 
           if [ -d tests/backend ] || [ -d src/backend/tests ]; then
-            ran_any=1
+            ran_any=$((ran_any + 1))
             set +e
-            pytest tests/backend src/backend/tests
+            python -m pytest tests/backend/ -v --tb=short --color=yes 2>&1
             rc=$?
             set -e
-            if [ "$rc" -ne 0 ]; then
-              failing_checks=$((failing_checks + 1))
+            if [ "$rc" -eq 0 ]; then
+              echo "::error::Backend generated tests unexpectedly passed pre-codegen."
+            elif [ "$rc" -eq 5 ]; then
+              echo "::error::Red phase gate: pytest collected zero backend tests."
+              exit 1
             else
-              echo "Backend generated tests unexpectedly passed pre-codegen."
+              failing_checks=$((failing_checks + 1))
+              echo "Backend tests failed as expected (exit $rc)."
             fi
           fi
 
           if [ -d tests/frontend ]; then
-            ran_any=1
+            ran_any=$((ran_any + 1))
             set +e
-            npm test --prefix src/frontend
+            npx vitest run ../../tests/frontend --reporter=verbose --passWithNoTests=false 2>&1
             rc=$?
             set -e
-            if [ "$rc" -ne 0 ]; then
-              failing_checks=$((failing_checks + 1))
+            if [ "$rc" -eq 0 ]; then
+              echo "::error::Frontend generated tests unexpectedly passed pre-codegen."
             else
-              echo "Frontend generated tests unexpectedly passed pre-codegen."
+              failing_checks=$((failing_checks + 1))
+              echo "Frontend tests failed as expected (exit $rc)."
             fi
           fi
 
           if [ "$ran_any" -eq 0 ]; then
-            echo "Red phase gate failed: no runnable generated tests were found."
+            echo "::error::Red phase gate failed: no runnable generated tests were found."
             exit 1
           fi
 
           if [ "$failing_checks" -ne "$ran_any" ]; then
-            echo "Red phase gate failed: all generated test checks must fail before codegen (failed $failing_checks of $ran_any)."
+            echo "::error::Red phase gate failed: all generated test checks must fail before codegen (failed $failing_checks of $ran_any)."
             exit 1
           fi
 
-          echo "Red phase confirmed: all generated test checks failed pre-codegen."
+          echo "Red phase confirmed: all $ran_any generated test checks failed pre-codegen."
 
   agent_2_codegen:
     needs: [agent_1_testgen, pre_codegen_red_phase]
@@ -225,19 +232,22 @@ jobs:
           node-version: "20"
 
       - name: Install backend dependencies
-        run: pip install -r src/backend/requirements.txt
-        continue-on-error: true
+        run: |
+          pip install pytest
+          pip install -r src/backend/requirements.txt
 
       - name: Install frontend dependencies
         working-directory: src/frontend
         run: npm ci
-        continue-on-error: true
 
       - name: Run backend tests
-        run: echo "TODO — run pytest tests/backend/"
+        env:
+          PYTHONPATH: ${{ github.workspace }}/src/backend
+        run: python -m pytest tests/backend/ -vv --tb=short --color=yes
 
       - name: Run frontend tests
-        run: echo "TODO — run vitest tests/frontend/"
+        working-directory: src/frontend
+        run: npx vitest run ../../tests/frontend --reporter=verbose
 
   agent_3_review:
     needs: [agent_1_testgen, post_codegen_tests]
@@ -261,7 +271,7 @@ jobs:
       - name: Install dependencies
         run: |
           curl https://cursor.com/install -fsS | bash
-          pip install pyyaml verify-everything
+          pip install pyyaml
 
       - name: Install reviewer skills
         run: npx skills@latest add https://github.com/imbue-ai/vet --yes
@@ -270,11 +280,31 @@ jobs:
         env:
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
         run: |
-          git fetch origin main --depth=1
-          python scripts/run_agent.py agent-3-review --extra-context "$(git diff origin/main...HEAD)"
+          set -euo pipefail
+          mkdir -p pipeline/reports
+          git fetch origin main
+          set +e
+          EXTRA_CONTEXT="$(git diff origin/main...HEAD)"
+          DIFF_RC=$?
+          set -e
+          if [ "${DIFF_RC}" -ne 0 ]; then
+            echo "::warning::git diff origin/main...HEAD failed (exit ${DIFF_RC}); continuing without merge diff context"
+            EXTRA_CONTEXT=""
+          fi
+          python scripts/run_agent.py agent-3-review --extra-context "${EXTRA_CONTEXT}"
 
       - name: Validate file scope
         run: scripts/validate_scope.sh agent-3-review
+
+      - name: Verify review report exists
+        run: |
+          if [ ! -d pipeline/reports ] || [ -z "$(ls -A pipeline/reports/)" ]; then
+            echo "::error::Expected at least one file in pipeline/reports/"
+            ls -la pipeline/reports || true
+            exit 1
+          fi
+          echo "Review report found:"
+          ls -la pipeline/reports/
 
       - name: Upload review report
         if: always()

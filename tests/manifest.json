@@ -1,5 +1,242 @@
 {
-  "mappings": [],
-  "unmapped_specs": [],
+  "generated_at": "2026-05-07",
+  "mappings": [
+    {
+      "spec": "specs/behavior/issues.spec.md",
+      "rule": "RULE-ISS-001",
+      "tests": [
+        "tests/backend/unit/test_issues.py::TestRuleISS001DisplayOnlyRelevantActiveIssues",
+        "tests/frontend/component/IssueCard.display.test.ts#RULE-ISS-001: listing filter"
+      ]
+    },
+    {
+      "spec": "specs/behavior/issues.spec.md",
+      "rule": "RULE-ISS-002",
+      "tests": [
+        "tests/backend/unit/test_issues.py::TestRuleISS002IssueCardDisplaysPreviewInformation",
+        "tests/frontend/component/IssueCard.display.test.ts#RULE-ISS-002: preview information",
+        "tests/frontend/e2e/browse-issues.e2e.test.ts#issue cards display required fields (RULE-ISS-002)"
+      ]
+    },
+    {
+      "spec": "specs/behavior/issues.spec.md",
+      "rule": "RULE-ISS-003",
+      "tests": [
+        "tests/backend/unit/test_issues.py::TestRuleISS003IssueDetailViewShowsFullInformation",
+        "tests/frontend/e2e/browse-issues.e2e.test.ts#clicking an issue card navigates to detail view"
+      ]
+    },
+    {
+      "spec": "specs/behavior/issues.spec.md",
+      "rule": "RULE-ISS-004",
+      "tests": [
+        "tests/backend/unit/test_issues.py::TestRuleISS004ClaimedIssuesAreMarked",
+        "tests/frontend/component/IssueCard.display.test.ts#RULE-ISS-004: claimed issue badge",
+        "tests/frontend/e2e/browse-issues.e2e.test.ts#claimed issue displays 'Already claimed' badge",
+        "tests/frontend/e2e/claim-issue.e2e.test.ts#claimed issue still shows CTA (RULE-CLM-004)"
+      ]
+    },
+    {
+      "spec": "specs/behavior/issues.spec.md",
+      "rule": "RULE-ISS-005",
+      "tests": [
+        "tests/backend/unit/test_issues.py::TestRuleISS005DefaultSortIsByFreshness",
+        "tests/frontend/component/IssueCard.display.test.ts#RULE-ISS-005: default sort by freshness",
+        "tests/frontend/e2e/browse-issues.e2e.test.ts#issues are sorted by freshness"
+      ]
+    },
+    {
+      "spec": "specs/behavior/search.spec.md",
+      "rule": "RULE-SRC-001",
+      "tests": [
+        "tests/backend/unit/test_search.py::TestRuleSRC001FullTextSearch",
+        "tests/frontend/unit/Search.filtering.test.ts#RULE-SRC-001: full-text search",
+        "tests/frontend/e2e/search.e2e.test.ts#search by title term shows matching issues"
+      ]
+    },
+    {
+      "spec": "specs/behavior/search.spec.md",
+      "rule": "RULE-SRC-002",
+      "tests": [
+        "tests/backend/unit/test_search.py::TestRuleSRC002FilterByFreshness",
+        "tests/frontend/unit/Search.filtering.test.ts#RULE-SRC-002: freshness filter",
+        "tests/frontend/e2e/search.e2e.test.ts#clicking filter on desktop shows freshness options"
+      ]
+    },
+    {
+      "spec": "specs/behavior/search.spec.md",
+      "rule": "RULE-SRC-003",
+      "tests": [
+        "tests/backend/unit/test_search.py::TestRuleSRC003SearchAndFilterCombine",
+        "tests/frontend/unit/Search.filtering.test.ts#RULE-SRC-003: combined search and filter",
+        "tests/frontend/e2e/search.e2e.test.ts#search and filter combine with AND logic"
+      ]
+    },
+    {
+      "spec": "specs/behavior/search.spec.md",
+      "rule": "RULE-SRC-004",
+      "tests": [
+        "tests/backend/unit/test_search.py::TestRuleSRC004MobileBottomSheet",
+        "tests/frontend/e2e/search.e2e.test.ts#tapping filter on mobile opens bottom sheet (RULE-SRC-004)"
+      ]
+    },
+    {
+      "spec": "specs/behavior/classification.spec.md",
+      "rule": "RULE-CLS-001",
+      "tests": [
+        "tests/backend/unit/test_classification.py::TestRuleCLS001ClassificationIsFullyAutomated"
+      ]
+    },
+    {
+      "spec": "specs/behavior/classification.spec.md",
+      "rule": "RULE-CLS-002",
+      "tests": [
+        "tests/backend/unit/test_classification.py::TestRuleCLS002EmptyDescriptionsAreNotRelevant"
+      ]
+    },
+    {
+      "spec": "specs/behavior/classification.spec.md",
+      "rule": "RULE-CLS-003",
+      "tests": [
+        "tests/backend/unit/test_classification.py::TestRuleCLS003AlreadyClaimedIssuesRemainRelevant"
+      ]
+    },
+    {
+      "spec": "specs/behavior/classification.spec.md",
+      "rule": "RULE-CLS-004",
+      "tests": [
+        "tests/backend/unit/test_classification.py::TestRuleCLS004ClassificationExclusionRules"
+      ]
+    },
+    {
+      "spec": "specs/behavior/claim.spec.md",
+      "rule": "RULE-CLM-001",
+      "tests": [
+        "tests/backend/unit/test_claim.py::TestRuleCLM001ClaimActionOffersTwoOptions",
+        "tests/frontend/e2e/claim-issue.e2e.test.ts#clicking 'Claim This Task' shows claim options modal (RULE-CLM-001)",
+        "tests/frontend/e2e/claim-issue.e2e.test.ts#'Go to GitHub' opens GitHub issue (RULE-CLM-001)",
+        "tests/frontend/e2e/claim-issue.e2e.test.ts#'Copy comment' copies claim comment (RULE-CLM-001)"
+      ]
+    },
+    {
+      "spec": "specs/behavior/claim.spec.md",
+      "rule": "RULE-CLM-002",
+      "tests": [
+        "tests/backend/unit/test_claim.py::TestRuleCLM002ClaimCommentIsAIGenerated",
+        "tests/frontend/e2e/claim-issue.e2e.test.ts#claim comment preview reflects specific issue (RULE-CLM-002)"
+      ]
+    },
+    {
+      "spec": "specs/behavior/claim.spec.md",
+      "rule": "RULE-CLM-003",
+      "tests": [
+        "tests/backend/unit/test_claim.py::TestRuleCLM003NoLocalClaimTracking",
+        "tests/frontend/e2e/claim-issue.e2e.test.ts#claim action does not modify issue listing status (RULE-CLM-003)"
+      ]
+    },
+    {
+      "spec": "specs/behavior/claim.spec.md",
+      "rule": "RULE-CLM-004",
+      "tests": [
+        "tests/backend/unit/test_claim.py::TestRuleCLM004MultipleUsersCanClaimSameIssue",
+        "tests/frontend/e2e/claim-issue.e2e.test.ts#claimed issue still shows CTA without blocking (RULE-CLM-004)"
+      ]
+    },
+    {
+      "spec": "specs/behavior/etl.spec.md",
+      "rule": "RULE-ETL-001",
+      "tests": [
+        "tests/backend/unit/test_etl.py::TestRuleETL001DailyAutomatedRefresh"
+      ]
+    },
+    {
+      "spec": "specs/behavior/etl.spec.md",
+      "rule": "RULE-ETL-002",
+      "tests": [
+        "tests/backend/unit/test_etl.py::TestRuleETL002IssuesOlderThan90DaysExcluded"
+      ]
+    },
+    {
+      "spec": "specs/behavior/etl.spec.md",
+      "rule": "RULE-ETL-003",
+      "tests": [
+        "tests/backend/unit/test_etl.py::TestRuleETL003ExistingIssuesAreUpdated"
+      ]
+    },
+    {
+      "spec": "specs/behavior/etl.spec.md",
+      "rule": "RULE-ETL-004",
+      "tests": [
+        "tests/backend/unit/test_etl.py::TestRuleETL004ClosedIssuesAreArchived"
+      ]
+    },
+    {
+      "spec": "specs/behavior/etl.spec.md",
+      "rule": "RULE-ETL-005",
+      "tests": [
+        "tests/backend/unit/test_etl.py::TestRuleETL005EnrichmentGeneratesAIAttributes"
+      ]
+    },
+    {
+      "spec": "specs/behavior/etl.spec.md",
+      "rule": "RULE-ETL-006",
+      "tests": [
+        "tests/backend/unit/test_etl.py::TestRuleETL006MediaDetection"
+      ]
+    },
+    {
+      "spec": "specs/api/openapi.yaml",
+      "rule": "API contract structure",
+      "tests": [
+        "tests/backend/contract/test_openapi_contract.py::TestOpenAPIContractStructure",
+        "tests/backend/contract/test_openapi_contract.py::TestOpenAPIHealthEndpointContract",
+        "tests/backend/contract/test_openapi_contract.py::TestOpenAPIIssueEndpointsContract"
+      ]
+    },
+    {
+      "spec": "specs/brand/voice-and-tone.md",
+      "rule": "Brand copy strings",
+      "tests": [
+        "tests/cross/test_brand_copy.py::TestBrandCopyStrings",
+        "tests/cross/test_brand_copy.py::TestForbiddenPatterns",
+        "tests/cross/test_brand_copy.py::TestPreferredTerminology"
+      ]
+    },
+    {
+      "spec": "src/backend/app/main.py",
+      "rule": "/health endpoint",
+      "tests": [
+        "tests/backend/integration/test_health.py::TestHealthEndpoint"
+      ]
+    },
+    {
+      "spec": "specs/uxi/flows/browse-issues.flow.md",
+      "rule": "Browse Issues flow",
+      "tests": [
+        "tests/frontend/e2e/browse-issues.e2e.test.ts"
+      ]
+    },
+    {
+      "spec": "specs/uxi/flows/search.flow.md",
+      "rule": "Search flow",
+      "tests": [
+        "tests/frontend/e2e/search.e2e.test.ts"
+      ]
+    },
+    {
+      "spec": "specs/uxi/flows/claim-issue.flow.md",
+      "rule": "Claim Issue flow",
+      "tests": [
+        "tests/frontend/e2e/claim-issue.e2e.test.ts"
+      ]
+    }
+  ],
+  "unmapped_specs": [
+    "specs/brand/visual-identity.md",
+    "specs/chapters/domain-model.md",
+    "specs/chapters/glossary.md",
+    "specs/spec-schema.md",
+    "specs/ai-first-tdd-project-guide.md"
+  ],
   "orphaned_tests": []
 }

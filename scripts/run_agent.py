@@ -44,6 +44,7 @@ def main():
     parser = argparse.ArgumentParser(description="Run a Cursor-backed agent")
     parser.add_argument("agent_name", help="Agent directory name (e.g. agent-1-testgen)")
     parser.add_argument("--extra-context", default="", help="Additional context appended to the prompt")
+    parser.add_argument("--extra-context-file", default="", help="Path to file whose contents are appended as extra context")
     args = parser.parse_args()
 
     config = load_agent_config(args.agent_name)
@@ -53,8 +54,11 @@ def main():
     scope = load_scope_preamble(args.agent_name)
     if scope:
         prompt = scope + "\n" + prompt
-    if args.extra_context:
-        prompt += "\n\n--- ADDITIONAL CONTEXT ---\n" + args.extra_context
+    extra = args.extra_context
+    if args.extra_context_file:
+        extra = Path(args.extra_context_file).read_text()
+    if extra:
+        prompt += "\n\n--- ADDITIONAL CONTEXT ---\n" + extra
 
     print(f"Running {args.agent_name} with model={model}", file=sys.stderr)
     try:

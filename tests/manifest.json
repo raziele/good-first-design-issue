@@ -1,5 +1,268 @@
 {
-  "mappings": [],
-  "unmapped_specs": [],
+  "mappings": [
+    {
+      "spec": "specs/behavior/issues.spec.md",
+      "rules": [
+        {
+          "id": "RULE-ISS-001",
+          "description": "Display only relevant active issues",
+          "tests": [
+            "tests/backend/unit/test_issues.py::TestRuleISS001::test_relevant_active_issue_appears_in_listing",
+            "tests/backend/unit/test_issues.py::TestRuleISS001::test_not_relevant_issue_is_hidden",
+            "tests/backend/unit/test_issues.py::TestRuleISS001::test_archived_issue_is_hidden_from_main_listing",
+            "tests/backend/unit/test_issues.py::TestRuleISS001::test_closed_issue_is_hidden_from_main_listing",
+            "tests/backend/unit/test_issues.py::TestRuleISS001::test_mixed_issues_only_relevant_active_shown"
+          ]
+        },
+        {
+          "id": "RULE-ISS-002",
+          "description": "Issue card displays preview information",
+          "tests": [
+            "tests/backend/unit/test_issues.py::TestRuleISS002::test_card_shows_required_elements",
+            "tests/backend/unit/test_issues.py::TestRuleISS002::test_description_truncated_to_200_chars",
+            "tests/backend/unit/test_issues.py::TestRuleISS002::test_description_shorter_than_200_not_truncated",
+            "tests/backend/unit/test_issues.py::TestRuleISS002::test_media_indicator_absent_when_no_media",
+            "tests/frontend/unit/IssueCard.unit.test.ts > IssueCard — RULE-ISS-002: card preview information",
+            "tests/frontend/e2e/browse-issues.e2e.test.ts > browse-issues flow — happy path"
+          ]
+        },
+        {
+          "id": "RULE-ISS-003",
+          "description": "Issue detail view shows full information",
+          "tests": [
+            "tests/backend/unit/test_issues.py::TestRuleISS003",
+            "tests/frontend/unit/IssueCard.unit.test.ts > IssueCard — RULE-ISS-003: detail view full information",
+            "tests/frontend/e2e/browse-issues.e2e.test.ts > browse-issues flow — issue detail view"
+          ]
+        },
+        {
+          "id": "RULE-ISS-004",
+          "description": "Claimed issues are marked",
+          "tests": [
+            "tests/backend/unit/test_issues.py::TestRuleISS004",
+            "tests/frontend/unit/IssueCard.unit.test.ts > IssueCard — RULE-ISS-004: claimed issue badge",
+            "tests/frontend/e2e/browse-issues.e2e.test.ts > browse-issues flow — claimed issue display"
+          ]
+        },
+        {
+          "id": "RULE-ISS-005",
+          "description": "Default sort is by freshness",
+          "tests": [
+            "tests/backend/unit/test_issues.py::TestRuleISS005",
+            "tests/frontend/unit/IssueCard.unit.test.ts > Issue listing — RULE-ISS-005: default sort by freshness",
+            "tests/frontend/e2e/browse-issues.e2e.test.ts > browse-issues flow — happy path > default listing order is by freshness ascending"
+          ]
+        }
+      ]
+    },
+    {
+      "spec": "specs/behavior/claim.spec.md",
+      "rules": [
+        {
+          "id": "RULE-CLM-001",
+          "description": "Claim action offers two options",
+          "tests": [
+            "tests/frontend/unit/ClaimFlow.unit.test.ts > ClaimFlow — RULE-CLM-001: two claim options offered",
+            "tests/frontend/e2e/claim-issue.e2e.test.ts > claim-issue flow — claim modal",
+            "tests/frontend/e2e/claim-issue.e2e.test.ts > claim-issue flow — Path A: Go to GitHub",
+            "tests/frontend/e2e/claim-issue.e2e.test.ts > claim-issue flow — Path B: Copy comment"
+          ]
+        },
+        {
+          "id": "RULE-CLM-002",
+          "description": "Claim comment is AI-generated",
+          "tests": [
+            "tests/frontend/unit/ClaimFlow.unit.test.ts > ClaimFlow — RULE-CLM-002: claim comment is contextual"
+          ]
+        },
+        {
+          "id": "RULE-CLM-003",
+          "description": "No local claim tracking",
+          "tests": [
+            "tests/frontend/unit/ClaimFlow.unit.test.ts > ClaimFlow — RULE-CLM-003: no local database record created"
+          ]
+        },
+        {
+          "id": "RULE-CLM-004",
+          "description": "Multiple users can claim same issue",
+          "tests": [
+            "tests/frontend/unit/ClaimFlow.unit.test.ts > ClaimFlow — RULE-CLM-004: no blocking for multiple claimers",
+            "tests/frontend/e2e/claim-issue.e2e.test.ts > claim-issue flow — already claimed warnings"
+          ]
+        }
+      ]
+    },
+    {
+      "spec": "specs/behavior/classification.spec.md",
+      "rules": [
+        {
+          "id": "RULE-CLS-001",
+          "description": "Classification is fully automated",
+          "tests": [
+            "tests/backend/unit/test_classification.py::TestRuleCLS001::test_design_issue_classified_as_relevant",
+            "tests/backend/unit/test_classification.py::TestRuleCLS001::test_backend_issue_classified_as_not_relevant"
+          ]
+        },
+        {
+          "id": "RULE-CLS-002",
+          "description": "Empty descriptions are not relevant",
+          "tests": [
+            "tests/backend/unit/test_classification.py::TestRuleCLS002"
+          ]
+        },
+        {
+          "id": "RULE-CLS-003",
+          "description": "Already-claimed issues remain relevant but flagged",
+          "tests": [
+            "tests/backend/unit/test_classification.py::TestRuleCLS003"
+          ]
+        },
+        {
+          "id": "RULE-CLS-004",
+          "description": "Classification exclusion rules",
+          "tests": [
+            "tests/backend/unit/test_classification.py::TestRuleCLS004"
+          ]
+        }
+      ]
+    },
+    {
+      "spec": "specs/behavior/etl.spec.md",
+      "rules": [
+        {
+          "id": "RULE-ETL-001",
+          "description": "Daily automated refresh",
+          "tests": [
+            "tests/backend/unit/test_etl.py::TestRuleETL001"
+          ]
+        },
+        {
+          "id": "RULE-ETL-002",
+          "description": "Issues older than 90 days excluded on initial fetch",
+          "tests": [
+            "tests/backend/unit/test_etl.py::TestRuleETL002"
+          ]
+        },
+        {
+          "id": "RULE-ETL-003",
+          "description": "Existing issues are updated",
+          "tests": [
+            "tests/backend/unit/test_etl.py::TestRuleETL003"
+          ]
+        },
+        {
+          "id": "RULE-ETL-004",
+          "description": "Closed issues are archived",
+          "tests": [
+            "tests/backend/unit/test_etl.py::TestRuleETL004"
+          ]
+        },
+        {
+          "id": "RULE-ETL-005",
+          "description": "Enrichment generates AI attributes",
+          "tests": [
+            "tests/backend/unit/test_etl.py::TestRuleETL005"
+          ]
+        },
+        {
+          "id": "RULE-ETL-006",
+          "description": "Media detection",
+          "tests": [
+            "tests/backend/unit/test_etl.py::TestRuleETL006"
+          ]
+        }
+      ]
+    },
+    {
+      "spec": "specs/behavior/search.spec.md",
+      "rules": [
+        {
+          "id": "RULE-SRC-001",
+          "description": "Full-text search across title and description",
+          "tests": [
+            "tests/backend/unit/test_search.py::TestRuleSRC001",
+            "tests/frontend/e2e/search.e2e.test.ts > search flow — RULE-SRC-001: full-text search"
+          ]
+        },
+        {
+          "id": "RULE-SRC-002",
+          "description": "Filter by freshness",
+          "tests": [
+            "tests/backend/unit/test_search.py::TestRuleSRC002",
+            "tests/frontend/e2e/search.e2e.test.ts > search flow — RULE-SRC-002: freshness filter"
+          ]
+        },
+        {
+          "id": "RULE-SRC-003",
+          "description": "Search and filter combine",
+          "tests": [
+            "tests/backend/unit/test_search.py::TestRuleSRC003",
+            "tests/frontend/e2e/search.e2e.test.ts > search flow — RULE-SRC-003: combined AND logic"
+          ]
+        },
+        {
+          "id": "RULE-SRC-004",
+          "description": "Mobile uses bottom sheet for filters",
+          "tests": [
+            "tests/frontend/e2e/search.e2e.test.ts > search flow — RULE-SRC-004: mobile bottom sheet"
+          ]
+        }
+      ]
+    },
+    {
+      "spec": "specs/api/openapi.yaml",
+      "rules": [
+        {
+          "id": "API-HEALTH",
+          "description": "GET /health endpoint contract",
+          "tests": [
+            "tests/backend/contract/test_api_contract.py::TestHealthEndpoint"
+          ]
+        }
+      ]
+    },
+    {
+      "spec": "specs/uxi/flows/browse-issues.flow.md",
+      "rules": [
+        {
+          "id": "FLOW-BROWSE",
+          "description": "Browse issues flow — all states",
+          "tests": [
+            "tests/frontend/e2e/browse-issues.e2e.test.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "spec": "specs/uxi/flows/claim-issue.flow.md",
+      "rules": [
+        {
+          "id": "FLOW-CLAIM",
+          "description": "Claim issue flow — all paths and states",
+          "tests": [
+            "tests/frontend/e2e/claim-issue.e2e.test.ts"
+          ]
+        }
+      ]
+    },
+    {
+      "spec": "specs/uxi/flows/search.flow.md",
+      "rules": [
+        {
+          "id": "FLOW-SEARCH",
+          "description": "Search and filter flow — all paths and states",
+          "tests": [
+            "tests/frontend/e2e/search.e2e.test.ts"
+          ]
+        }
+      ]
+    }
+  ],
+  "unmapped_specs": [
+    "specs/brand/voice-and-tone.md — copy constants validated inline in e2e tests",
+    "specs/brand/visual-identity.md — visual/CSS spec; requires visual regression tooling",
+    "specs/chapters/glossary.md — terminology used in test names; no executable tests",
+    "specs/chapters/domain-model.md — entity shape validated via type annotations in frontend unit tests"
+  ],
   "orphaned_tests": []
 }

@@ -5,6 +5,8 @@
 - Documentation goes under `docs/`; specs/plans go under `docs/specs`
 - ETL must be runnable from the `etl/` directory (cd etl && uv run etl)
 - Use uv for Python project management
+- Verify repo state before writing CI commands — check lockfiles, test scripts, and paths before referencing them
+- When fixing CI patterns, audit ALL jobs for the same issue — don't scope fixes without a cross-job consistency pass
 
 ## Learned Workspace Facts
 
@@ -16,6 +18,9 @@
 - Frontend: Vite + React in `src/frontend/`; Backend: FastAPI in `src/backend/` with `/health` endpoint
 - DuckDB requires `pytz` at runtime for timezone support
 - ETL modes: `--reset` (180 days back, `created:>=`) and default upsert (1 day back, `updated:>=`)
+- Never pass unbounded shell expansion as a CLI argument (Linux ARG_MAX ~2MB); pipe large data through temp files
+- `continue-on-error: true` on CI dep installs masks upstream failures — avoid unless there's an explicit fallback
+- Frontend (`src/frontend/`) has no `package-lock.json` — use `npm install` not `npm ci`
 
 ---
 

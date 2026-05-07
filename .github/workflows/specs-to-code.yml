@@ -100,7 +100,7 @@ jobs:
 
       - name: Install backend dependencies
         run: |
-          pip install pytest
+          pip install -r tests/requirements.txt
           pip install -r src/backend/requirements.txt
 
       - name: Install frontend dependencies
@@ -231,7 +231,7 @@ jobs:
 
       - name: Install backend dependencies
         run: |
-          pip install pytest
+          pip install -r tests/requirements.txt
           pip install -r src/backend/requirements.txt
 
       - name: Install frontend dependencies

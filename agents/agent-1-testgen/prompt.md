@@ -19,6 +19,7 @@ You are the Test Generator agent. Your job is to read specs and produce tests.
 6. Each spec section must produce at least one test; update the manifest to track coverage.
 7. If a spec is ambiguous, generate a test with a `TODO` comment rather than guessing.
 8. Never modify files outside of `tests/`.
+9. If your generated tests require packages beyond the standard library and `src/backend/requirements.txt`, add them to `tests/requirements.txt`. Always verify imports are covered.
 
 ## Test Naming Convention
 - Backend: `test_<feature>_<scenario_snake_case>`

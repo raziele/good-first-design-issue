@@ -116,20 +116,28 @@ jobs:
           backend_list="$RUNNER_TEMP/changed-backend-tests.txt"
           frontend_list="$RUNNER_TEMP/changed-frontend-tests.txt"
 
+          # Driver tests only — contract tests under tests/**/contract/** pin
+          # pre-existing baseline behavior and are exempt from the red-phase
+          # gate (they're allowed to pass pre-codegen).
           git diff --name-only --diff-filter=AM origin/main...HEAD -- 'tests/backend/' \
-            | grep -E '/test_[^/]+\.py$' > "$backend_list" || true
+            | grep -E '/test_[^/]+\.py$' \
+            | grep -Ev '^tests/backend/contract/' \
+            > "$backend_list" || true
           git diff --name-only --diff-filter=AM origin/main...HEAD -- 'tests/frontend/' \
-            | grep -E '\.(test|spec)\.[cm]?[jt]sx?$' > "$frontend_list" || true
+            | grep -E '\.(test|spec)\.[cm]?[jt]sx?$' \
+            | grep -Ev '^tests/frontend/contract/' \
+            > "$frontend_list" || true
 
           echo "CHANGED_BACKEND_TESTS=$backend_list" >> "$GITHUB_ENV"
           echo "CHANGED_FRONTEND_TESTS=$frontend_list" >> "$GITHUB_ENV"
 
           backend_count=$(wc -l < "$backend_list" | tr -d ' ')
           frontend_count=$(wc -l < "$frontend_list" | tr -d ' ')
-          echo "Changed backend test files ($backend_count):"
+          echo "Changed backend driver test files ($backend_count):"
           sed 's/^/  - /' "$backend_list" || true
-          echo "Changed frontend test files ($frontend_count):"
+          echo "Changed frontend driver test files ($frontend_count):"
           sed 's/^/  - /' "$frontend_list" || true
+          echo "(Contract tests under tests/**/contract/** are exempt from this gate.)"
 
       - name: Static SUT-import guard (changed tests must reference production code)
         run: |

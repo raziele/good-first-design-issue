@@ -52,3 +52,72 @@ trivially passes. Replaced with **diff-scoped, per-file** semantics:
 Updated `agents/agent-1-testgen/prompt.md` to describe these semantics
 explicitly, including the consequence that adding tests for already-implemented
 rules is a gate failure (delete the redundant test or drive net-new behavior).
+
+---
+
+## 2026-05-08 — Run #25576299769 (main, post-merge of PR #13)
+
+### Issues Found
+
+- gate-failure: 1 of 12 changed test files (`tests/backend/test_api_health.py`)
+  passed pre-codegen. The agent generated a contract test that pinned the
+  pre-existing `/health` endpoint baked into the FastAPI scaffold since project
+  bootstrap. The test imported `from app.main import app` (legitimate SUT
+  import), but every assertion was already satisfied. The agent's own docstring
+  acknowledged the situation: *"Tests for the /health endpoint (pre-existing —
+  baseline contract)."*
+- structural-conflict: strict TDD red-phase requires every changed test to
+  fail; contract tests for stable scaffold endpoints can never fail without
+  removing the scaffold. The two requirements are mutually exclusive without a
+  channel for "contract tests."
+
+### Fixes Applied (Option B — path-based exemption + agent scope restriction)
+
+- `pipeline/locks.yaml`: replaced agent-1-testgen `write: ["tests/**"]` with an
+  explicit allow-list of subdirectories — `tests/backend/{unit,integration}/**`,
+  `tests/frontend/{unit,component,e2e}/**`, plus the manifest, requirements, and
+  conftest files. Added `tests/backend/contract/**` and
+  `tests/frontend/contract/**` to the deny list. Agent-1 can no longer write
+  contract tests at all.
+- `scripts/validate_scope.sh`: now reads both `write` and `deny` from
+  `locks.yaml` and reports each separately. Also switched from
+  `git diff --name-only` (tracked-only) to
+  `git ls-files --modified --others --exclude-standard` so brand-new files in
+  denied paths are caught (the prior implementation missed untracked files
+  because the validator runs before the workflow's `git add`).
+- `agents/agent-1-testgen/prompt.md`: rewrote `## Outputs` with the explicit
+  allow-list and a hard rule forbidding contract tests; added an anti-pattern
+  for pinning baseline scaffold behavior; clarified subdirectory placement
+  (flat `tests/backend/test_*.py` is now also a scope violation).
+- `.github/workflows/specs-to-code.yml`: `Compute changed test files` step now
+  excludes `tests/backend/contract/**` and `tests/frontend/contract/**` from the
+  diff lists, so contract tests are exempt from the red-phase gate (defense in
+  depth — even if a human pushes a contract test on a feature branch, it won't
+  block the pipeline).
+
+### Structural Gaps Identified
+
+- The pre-existing `pipeline/locks.yaml` had no enforcement for the `deny`
+  field; only `write` was checked. Any path that wasn't in `write` was simply
+  flagged as "outside scope," conflating actively-denied paths with
+  unspecified ones.
+- The validator missed brand-new (untracked) files because it relied on `git
+  diff` semantics, undermining any deny rule for paths the agent could create
+  for the first time.
+- The role of agent-1 was implicit: it was supposed to write driver tests, not
+  contract tests, but no rule said so. The rebuilt prompt and locks now make
+  this contract explicit.
+
+### Rules Derived
+
+- Permission models for AI-agent file scopes need both **allow** and **deny**
+  enforcement, not just allow. Deny lets you carve out exempt subtrees within
+  an otherwise allowed parent.
+- Scope validators that run before staging (`git add`) MUST include untracked
+  files (`git ls-files --modified --others --exclude-standard`), not just
+  tracked diffs.
+- TDD red-phase gates on real codebases need a channel for **contract tests**
+  that pin pre-existing baseline behavior. Either exempt them by path, by
+  marker, or by ownership (humans only). This project chose ownership +
+  path: contract tests live under `tests/**/contract/**`, owned by humans, and
+  are exempt from the red-phase diff scope.

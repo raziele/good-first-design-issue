@@ -2,8 +2,24 @@
 permissions:
   agent-1-testgen:
     read:  ["specs/**"]
-    write: ["tests/**"]
-    deny:  ["src/**", "agents/**", "pipeline/**"]
+    write:
+      - "tests/manifest.json"
+      - "tests/requirements.txt"
+      - "tests/conftest.py"
+      - "tests/backend/conftest.py"
+      - "tests/backend/__init__.py"
+      - "tests/backend/unit/**"
+      - "tests/backend/integration/**"
+      - "tests/frontend/conftest.ts"
+      - "tests/frontend/unit/**"
+      - "tests/frontend/component/**"
+      - "tests/frontend/e2e/**"
+    deny:
+      - "tests/backend/contract/**"
+      - "tests/frontend/contract/**"
+      - "src/**"
+      - "agents/**"
+      - "pipeline/**"
 
   agent-2-codegen:
     read:  ["specs/**", "tests/**"]

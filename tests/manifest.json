@@ -1,5 +1,243 @@
 {
-  "mappings": [],
-  "unmapped_specs": [],
+  "mappings": [
+    {
+      "rule_id": "RULE-CLS-001",
+      "spec_file": "specs/behavior/classification.spec.md",
+      "tests": [
+        "tests/backend/test_classification.py::test_classification_design_issue_is_relevant",
+        "tests/backend/test_classification.py::test_classification_backend_issue_is_not_relevant",
+        "tests/backend/test_classification.py::test_design_keywords_constant_is_non_empty"
+      ]
+    },
+    {
+      "rule_id": "RULE-CLS-002",
+      "spec_file": "specs/behavior/classification.spec.md",
+      "tests": [
+        "tests/backend/test_classification.py::test_classification_empty_description_is_not_relevant",
+        "tests/backend/test_classification.py::test_classification_placeholder_only_description_is_not_relevant"
+      ]
+    },
+    {
+      "rule_id": "RULE-CLS-003",
+      "spec_file": "specs/behavior/classification.spec.md",
+      "tests": [
+        "tests/backend/test_classification.py::test_classification_claimed_design_issue_is_relevant_with_flag"
+      ]
+    },
+    {
+      "rule_id": "RULE-CLS-004",
+      "spec_file": "specs/behavior/classification.spec.md",
+      "tests": [
+        "tests/backend/test_classification.py::test_classification_exclusion_patterns_not_relevant[test_coverage-...]",
+        "tests/backend/test_classification.py::test_classification_exclusion_patterns_not_relevant[api_endpoint-...]",
+        "tests/backend/test_classification.py::test_classification_exclusion_patterns_not_relevant[refactor-...]",
+        "tests/backend/test_classification.py::test_classification_exclusion_patterns_not_relevant[implement_in_code-...]",
+        "tests/backend/test_classification.py::test_classification_exclusion_patterns_not_relevant[sprite_sheet-...]",
+        "tests/backend/test_classification.py::test_exclusion_patterns_constant_is_non_empty"
+      ]
+    },
+    {
+      "rule_id": "RULE-ISS-001",
+      "spec_file": "specs/behavior/issues.spec.md",
+      "tests": [
+        "tests/backend/test_issues.py::test_filter_issues_includes_relevant_active",
+        "tests/backend/test_issues.py::test_filter_issues_excludes_not_relevant",
+        "tests/backend/test_issues.py::test_filter_issues_excludes_archived",
+        "tests/backend/test_issues.py::test_filter_issues_combined",
+        "tests/frontend/IssueListing.filter.test.jsx::Browse Issues flow — shows relevant active issues",
+        "tests/frontend/IssueListing.filter.test.jsx::Browse Issues flow — hides not_relevant issues",
+        "tests/frontend/IssueListing.filter.test.jsx::Browse Issues flow — hides archived issues",
+        "tests/frontend/IssueListing.filter.test.jsx::Browse Issues flow — shows empty state when all filtered out"
+      ]
+    },
+    {
+      "rule_id": "RULE-ISS-002",
+      "spec_file": "specs/behavior/issues.spec.md",
+      "tests": [
+        "tests/backend/test_issues.py::test_truncate_description_short_stays_unchanged",
+        "tests/backend/test_issues.py::test_truncate_description_long_is_cut_at_200_chars",
+        "tests/backend/test_issues.py::test_truncate_description_long_ends_with_ellipsis",
+        "tests/frontend/IssueCard.display.test.jsx::IssueCard display — shows repo name",
+        "tests/frontend/IssueCard.display.test.jsx::IssueCard display — shows issue title",
+        "tests/frontend/IssueCard.display.test.jsx::IssueCard display — shows truncated description",
+        "tests/frontend/IssueCard.display.test.jsx::IssueCard display — shows complexity score",
+        "tests/frontend/IssueCard.display.test.jsx::IssueCard display — shows seniority level",
+        "tests/frontend/IssueCard.display.test.jsx::IssueCard display — shows freshness indicator",
+        "tests/frontend/IssueCard.display.test.jsx::IssueCard display — shows media indicator when has_media is true",
+        "tests/frontend/IssueCard.display.test.jsx::IssueCard display — does not show media indicator when has_media is false"
+      ]
+    },
+    {
+      "rule_id": "RULE-ISS-003",
+      "spec_file": "specs/behavior/issues.spec.md",
+      "tests": [
+        "tests/frontend/IssueDetail.display.test.jsx::IssueDetail display — shows full description",
+        "tests/frontend/IssueDetail.display.test.jsx::IssueDetail display — shows complexity score",
+        "tests/frontend/IssueDetail.display.test.jsx::IssueDetail display — shows attractiveness rating",
+        "tests/frontend/IssueDetail.display.test.jsx::IssueDetail display — shows seniority level",
+        "tests/frontend/IssueDetail.display.test.jsx::IssueDetail display — shows repo star count",
+        "tests/frontend/IssueDetail.display.test.jsx::IssueDetail display — provides direct link to GitHub issue",
+        "tests/frontend/IssueDetail.display.test.jsx::IssueDetail display — shows media indicator when has_media is true",
+        "tests/frontend/IssueDetail.display.test.jsx::IssueDetail display — does not embed images inline"
+      ]
+    },
+    {
+      "rule_id": "RULE-ISS-004",
+      "spec_file": "specs/behavior/issues.spec.md",
+      "tests": [
+        "tests/backend/test_issues.py::test_filter_issues_includes_claimed_relevant",
+        "tests/frontend/IssueCard.display.test.jsx::IssueCard claimed state — shows Already claimed badge",
+        "tests/frontend/IssueCard.display.test.jsx::IssueCard claimed state — does not show claimed badge when not claimed",
+        "tests/frontend/claim-issue.e2e.test.jsx::Claim Issue flow — already claimed issue — shows Already claimed badge",
+        "tests/frontend/claim-issue.e2e.test.jsx::Claim Issue flow — already claimed issue — CTA still enabled"
+      ]
+    },
+    {
+      "rule_id": "RULE-ISS-005",
+      "spec_file": "specs/behavior/issues.spec.md",
+      "tests": [
+        "tests/backend/test_issues.py::test_sort_issues_by_freshness_newest_first",
+        "tests/frontend/IssueListing.filter.test.jsx::IssueListing default sort — renders newest issue before older issue"
+      ]
+    },
+    {
+      "rule_id": "RULE-SRC-001",
+      "spec_file": "specs/behavior/search.spec.md",
+      "tests": [
+        "tests/backend/test_search.py::test_search_matches_title",
+        "tests/backend/test_search.py::test_search_matches_description",
+        "tests/backend/test_search.py::test_search_returns_empty_when_no_match",
+        "tests/backend/test_search.py::test_search_is_case_insensitive",
+        "tests/frontend/IssueListing.filter.test.jsx::IssueListing search — shows issues matching search term",
+        "tests/frontend/IssueListing.filter.test.jsx::IssueListing search — shows empty state when no results"
+      ]
+    },
+    {
+      "rule_id": "RULE-SRC-002",
+      "spec_file": "specs/behavior/search.spec.md",
+      "tests": [
+        "tests/backend/test_search.py::test_freshness_filter_options[Last 7 days-7-...]",
+        "tests/backend/test_search.py::test_freshness_filter_options[Last 30 days-30-...]",
+        "tests/backend/test_search.py::test_freshness_filter_options[Last 90 days-90-...]",
+        "tests/backend/test_search.py::test_freshness_filter_options[All time-None-...]",
+        "tests/frontend/IssueListing.filter.test.jsx::IssueListing freshness filter — hides stale issues"
+      ]
+    },
+    {
+      "rule_id": "RULE-SRC-003",
+      "spec_file": "specs/behavior/search.spec.md",
+      "tests": [
+        "tests/backend/test_search.py::test_search_and_filter_combine_and_logic"
+      ]
+    },
+    {
+      "rule_id": "RULE-SRC-004",
+      "spec_file": "specs/behavior/search.spec.md",
+      "tests": []
+    },
+    {
+      "rule_id": "RULE-CLM-001",
+      "spec_file": "specs/behavior/claim.spec.md",
+      "tests": [
+        "tests/backend/test_claim.py::test_build_github_comment_url_includes_issue_url",
+        "tests/backend/test_claim.py::test_build_github_comment_url_includes_prefilled_comment",
+        "tests/frontend/ClaimModal.interaction.test.jsx::ClaimModal — shows Go to GitHub option",
+        "tests/frontend/ClaimModal.interaction.test.jsx::ClaimModal — shows Copy comment option",
+        "tests/frontend/ClaimModal.interaction.test.jsx::ClaimModal — shows modal title",
+        "tests/frontend/ClaimModal.interaction.test.jsx::ClaimModal copy comment path — shows confirmation message",
+        "tests/frontend/claim-issue.e2e.test.jsx::Claim Issue flow — entry — shows Claim This Task CTA",
+        "tests/frontend/claim-issue.e2e.test.jsx::Claim Issue flow — entry — opens modal on click",
+        "tests/frontend/claim-issue.e2e.test.jsx::Claim Issue flow — Path A: Go to GitHub",
+        "tests/frontend/claim-issue.e2e.test.jsx::Claim Issue flow — Path B: Copy comment"
+      ]
+    },
+    {
+      "rule_id": "RULE-CLM-002",
+      "spec_file": "specs/behavior/claim.spec.md",
+      "tests": [
+        "tests/backend/test_claim.py::test_generate_claim_comment_returns_non_empty",
+        "tests/backend/test_claim.py::test_generate_claim_comment_references_design_intent",
+        "tests/frontend/ClaimModal.interaction.test.jsx::ClaimModal — shows a preview of the claim comment"
+      ]
+    },
+    {
+      "rule_id": "RULE-CLM-003",
+      "spec_file": "specs/behavior/claim.spec.md",
+      "tests": [
+        "tests/backend/test_claim.py::test_claim_does_not_return_database_record"
+      ]
+    },
+    {
+      "rule_id": "RULE-CLM-004",
+      "spec_file": "specs/behavior/claim.spec.md",
+      "tests": [
+        "tests/backend/test_claim.py::test_claim_options_available_even_if_already_claimed",
+        "tests/backend/test_claim.py::test_claim_options_no_blocking_warning_for_claimed_issue",
+        "tests/frontend/ClaimModal.interaction.test.jsx::ClaimModal with already-claimed issue — still shows both options",
+        "tests/frontend/ClaimModal.interaction.test.jsx::ClaimModal with already-claimed issue — does not disable buttons"
+      ]
+    },
+    {
+      "rule_id": "RULE-ETL-001",
+      "spec_file": "specs/behavior/etl.spec.md",
+      "tests": []
+    },
+    {
+      "rule_id": "RULE-ETL-002",
+      "spec_file": "specs/behavior/etl.spec.md",
+      "tests": [
+        "tests/backend/test_etl.py::test_should_include_issue_old_issue_excluded_on_reset",
+        "tests/backend/test_etl.py::test_should_include_issue_recent_included_on_reset",
+        "tests/backend/test_etl.py::test_should_include_issue_boundary_90_days_excluded"
+      ]
+    },
+    {
+      "rule_id": "RULE-ETL-003",
+      "spec_file": "specs/behavior/etl.spec.md",
+      "tests": []
+    },
+    {
+      "rule_id": "RULE-ETL-004",
+      "spec_file": "specs/behavior/etl.spec.md",
+      "tests": [
+        "tests/backend/test_etl.py::test_archive_closed_issue_changes_status_to_archived",
+        "tests/backend/test_etl.py::test_active_issue_stays_active"
+      ]
+    },
+    {
+      "rule_id": "RULE-ETL-005",
+      "spec_file": "specs/behavior/etl.spec.md",
+      "tests": []
+    },
+    {
+      "rule_id": "RULE-ETL-006",
+      "spec_file": "specs/behavior/etl.spec.md",
+      "tests": [
+        "tests/backend/test_etl.py::test_detect_media_image_markdown",
+        "tests/backend/test_etl.py::test_detect_media_plain_text",
+        "tests/backend/test_etl.py::test_detect_media_external_link",
+        "tests/backend/test_etl.py::test_detect_media_video_embed",
+        "tests/backend/test_etl.py::test_detect_media_empty_body"
+      ]
+    }
+  ],
+  "unmapped_specs": [
+    {
+      "rule_id": "RULE-ETL-001",
+      "reason": "Tests daily CI scheduling — infrastructure-level, not unit-testable from Python; covered by CI workflow config"
+    },
+    {
+      "rule_id": "RULE-ETL-003",
+      "reason": "Upsert logic requires DB fixture; deferred pending DB abstraction layer in app.etl"
+    },
+    {
+      "rule_id": "RULE-ETL-005",
+      "reason": "AI enrichment scores require LLM mock/stub; deferred pending app.enrichment module"
+    },
+    {
+      "rule_id": "RULE-SRC-004",
+      "reason": "Mobile bottom sheet is a UI interaction test requiring viewport simulation; deferred for Playwright e2e"
+    }
+  ],
   "orphaned_tests": []
 }

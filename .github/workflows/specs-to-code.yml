@@ -87,6 +87,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ needs.agent_1_testgen.outputs.branch_name }}
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -107,55 +108,127 @@ jobs:
         working-directory: src/frontend
         run: npm install
 
-      - name: Verify red phase (all generated tests must fail pre-codegen)
+      - name: Compute changed test files vs origin/main
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main:refs/remotes/origin/main
+
+          backend_list="$RUNNER_TEMP/changed-backend-tests.txt"
+          frontend_list="$RUNNER_TEMP/changed-frontend-tests.txt"
+
+          git diff --name-only --diff-filter=AM origin/main...HEAD -- 'tests/backend/' \
+            | grep -E '/test_[^/]+\.py$' > "$backend_list" || true
+          git diff --name-only --diff-filter=AM origin/main...HEAD -- 'tests/frontend/' \
+            | grep -E '\.(test|spec)\.[cm]?[jt]sx?$' > "$frontend_list" || true
+
+          echo "CHANGED_BACKEND_TESTS=$backend_list" >> "$GITHUB_ENV"
+          echo "CHANGED_FRONTEND_TESTS=$frontend_list" >> "$GITHUB_ENV"
+
+          backend_count=$(wc -l < "$backend_list" | tr -d ' ')
+          frontend_count=$(wc -l < "$frontend_list" | tr -d ' ')
+          echo "Changed backend test files ($backend_count):"
+          sed 's/^/  - /' "$backend_list" || true
+          echo "Changed frontend test files ($frontend_count):"
+          sed 's/^/  - /' "$frontend_list" || true
+
+      - name: Static SUT-import guard (changed tests must reference production code)
+        run: |
+          set -euo pipefail
+          violations=0
+
+          if [ -s "$CHANGED_BACKEND_TESTS" ]; then
+            while IFS= read -r f; do
+              [ -z "$f" ] && continue
+              if ! grep -Eq '^[[:space:]]*(from[[:space:]]+app(\.|[[:space:]])|import[[:space:]]+app(\.|$|[[:space:]]))' "$f"; then
+                echo "::error file=$f::Backend test does not import the system under test (expected 'from app.<module> import ...' or 'import app.<module>')."
+                violations=$((violations + 1))
+              fi
+            done < "$CHANGED_BACKEND_TESTS"
+          fi
+
+          if [ -s "$CHANGED_FRONTEND_TESTS" ]; then
+            while IFS= read -r f; do
+              [ -z "$f" ] && continue
+              if ! grep -Eq "from[[:space:]]+['\"][^'\"]*src/frontend/src/" "$f"; then
+                echo "::error file=$f::Frontend test does not import from the SUT (expected a relative import containing 'src/frontend/src/')."
+                violations=$((violations + 1))
+              fi
+            done < "$CHANGED_FRONTEND_TESTS"
+          fi
+
+          if [ "$violations" -gt 0 ]; then
+            echo "::error::Static SUT-import guard failed: $violations changed test file(s) do not exercise production code. Tests must import the SUT, not redefine it inline."
+            exit 1
+          fi
+
+          echo "SUT-import guard passed: every changed test file imports from the SUT."
+
+      - name: Verify red phase (each changed test file must fail pre-codegen)
         env:
           PYTHONPATH: ${{ github.workspace }}/src/backend
         run: |
+          set -euo pipefail
           ran_any=0
-          failing_checks=0
+          unexpected_pass=0
 
-          if [ -d tests/backend ] || [ -d src/backend/tests ]; then
-            ran_any=$((ran_any + 1))
-            set +e
-            python -m pytest tests/backend/ -v --tb=short --color=yes 2>&1
-            rc=$?
-            set -e
-            if [ "$rc" -eq 0 ]; then
-              echo "::error::Backend generated tests unexpectedly passed pre-codegen."
-            elif [ "$rc" -eq 5 ]; then
-              echo "::error::Red phase gate: pytest collected zero backend tests."
-              exit 1
-            else
-              failing_checks=$((failing_checks + 1))
-              echo "Backend tests failed as expected (exit $rc)."
-            fi
+          if [ -s "$CHANGED_BACKEND_TESTS" ]; then
+            while IFS= read -r f; do
+              [ -z "$f" ] && continue
+              ran_any=$((ran_any + 1))
+              set +e
+              python -m pytest "$f" -v --tb=short --color=yes
+              rc=$?
+              set -e
+              case "$rc" in
+                0)
+                  echo "::error file=$f::Backend test file passed pre-codegen — every changed test file must have at least one failing test before codegen runs."
+                  unexpected_pass=$((unexpected_pass + 1))
+                  ;;
+                5)
+                  echo "::error file=$f::pytest collected zero tests in this file (likely a collection or import bug)."
+                  unexpected_pass=$((unexpected_pass + 1))
+                  ;;
+                *)
+                  echo "OK: $f failed as expected (exit $rc)."
+                  ;;
+              esac
+            done < "$CHANGED_BACKEND_TESTS"
           fi
 
-          if [ -d tests/frontend ]; then
-            ran_any=$((ran_any + 1))
-            set +e
-            npx vitest run ../../tests/frontend --reporter=verbose --passWithNoTests=false 2>&1
-            rc=$?
-            set -e
-            if [ "$rc" -eq 0 ]; then
-              echo "::error::Frontend generated tests unexpectedly passed pre-codegen."
-            else
-              failing_checks=$((failing_checks + 1))
-              echo "Frontend tests failed as expected (exit $rc)."
-            fi
+          if [ -s "$CHANGED_FRONTEND_TESTS" ]; then
+            while IFS= read -r f; do
+              [ -z "$f" ] && continue
+              ran_any=$((ran_any + 1))
+              vitest_log="$(mktemp)"
+              fe_relative="../../$f"
+              set +e
+              ( cd src/frontend && npx vitest run "$fe_relative" --reporter=verbose --passWithNoTests=false ) 2>&1 | tee "$vitest_log"
+              rc=${PIPESTATUS[0]}
+              set -e
+              if [ "$rc" -eq 0 ]; then
+                echo "::error file=$f::Frontend test file passed pre-codegen — every changed test file must have at least one failing test before codegen runs."
+                unexpected_pass=$((unexpected_pass + 1))
+              elif grep -q "No test files found" "$vitest_log"; then
+                echo "::error file=$f::vitest collected zero tests for this file (config / include-glob bug, not an expected red signal)."
+                unexpected_pass=$((unexpected_pass + 1))
+              else
+                echo "OK: $f failed as expected (exit $rc)."
+              fi
+              rm -f "$vitest_log"
+            done < "$CHANGED_FRONTEND_TESTS"
           fi
 
           if [ "$ran_any" -eq 0 ]; then
-            echo "::error::Red phase gate failed: no runnable generated tests were found."
+            echo "::warning::No changed test files vs origin/main; red phase has nothing to verify. Skipping."
+            exit 0
+          fi
+
+          if [ "$unexpected_pass" -gt 0 ]; then
+            echo "::error::Red phase gate failed: $unexpected_pass of $ran_any changed test file(s) did not fail pre-codegen."
             exit 1
           fi
 
-          if [ "$failing_checks" -ne "$ran_any" ]; then
-            echo "::error::Red phase gate failed: all generated test checks must fail before codegen (failed $failing_checks of $ran_any)."
-            exit 1
-          fi
-
-          echo "Red phase confirmed: all $ran_any generated test checks failed pre-codegen."
+          echo "Red phase confirmed: all $ran_any changed test file(s) failed pre-codegen."
 
   agent_2_codegen:
     needs: [agent_1_testgen, pre_codegen_red_phase]

@@ -7,8 +7,25 @@ that exercise the **system under test (SUT)**, not inline reimplementations of i
 - `specs/` directory (all chapters, behavior specs, UXI flows, API contracts, brand guidelines)
 
 ## Outputs
-- `tests/` directory (pytest for backend, vitest/playwright for frontend)
-- `tests/manifest.json` (spec-to-test mapping)
+
+You may **only** write under these paths (anything else fails the scope check):
+
+- `tests/manifest.json` — spec-to-test mapping
+- `tests/requirements.txt` — Python test deps
+- `tests/conftest.py`, `tests/backend/conftest.py`, `tests/backend/__init__.py`
+- `tests/backend/unit/**` — pure-logic backend tests (one rule = one test class or scenario)
+- `tests/backend/integration/**` — multi-component backend tests (DB + service + ETL etc.)
+- `tests/frontend/conftest.ts`
+- `tests/frontend/unit/**` — pure helper / hook tests, no DOM
+- `tests/frontend/component/**` — DOM-rendered component tests (Testing Library)
+- `tests/frontend/e2e/**` — Playwright / vitest e2e flow tests
+
+You **must not** write under `tests/backend/contract/**` or
+`tests/frontend/contract/**`. Contract tests pin pre-existing baseline
+behavior of stable scaffolds (the FastAPI `/health` endpoint, Vite preview
+config, Procfile-driven boot, etc.) and are owned by humans, not by you.
+Generating a contract test for already-implemented behavior trivially passes
+the red-phase gate and aborts the pipeline.
 
 ## Red-Phase Contract
 
@@ -44,6 +61,18 @@ Practical consequences:
    test under `tests/frontend/` MUST import from `../../src/frontend/src/...`
    (relative path to the production component/util it tests).
 
+   Place backend tests under one of:
+   - `tests/backend/unit/test_<module>.py` for pure-logic and rule tests
+   - `tests/backend/integration/test_<area>.py` for cross-module tests
+
+   Place frontend tests under one of:
+   - `tests/frontend/unit/<Feature>.<scenario>.test.ts(x)` for non-DOM helpers/hooks
+   - `tests/frontend/component/<Component>.<scenario>.test.tsx` for component renders
+   - `tests/frontend/e2e/<flow>.e2e.test.ts(x)` for end-to-end flows
+
+   Never place tests directly at `tests/backend/` or `tests/frontend/` (flat layout
+   triggers the scope check).
+
 2. **No inline SUT implementations.** Do NOT define classification logic,
    parsing, scoring, ETL helpers, search filters, truncation utilities, or any
    business-logic functions or constants inside test files. If the spec says
@@ -57,8 +86,9 @@ Practical consequences:
    expected outputs — expected outputs are literals or trivial transforms.
 
 4. **One test or scenario per spec rule.** Read behavior specs and generate one
-   or more test cases per scenario. Read API contracts and generate contract
-   tests. Read UXI flows and generate e2e test skeletons and component tests.
+   or more test cases per scenario. Read UXI flows and generate e2e test
+   skeletons and component tests. **Do not** generate API contract tests —
+   those belong under `tests/**/contract/` and are out of your scope.
 
 5. **Use spec terminology.** Use terms from `specs/chapters/glossary.md` in test
    names and assertions.
@@ -75,13 +105,15 @@ Practical consequences:
    `it.todo` test with a `TODO:` comment naming the ambiguity. Do NOT guess
    behavior and do NOT inline a plausible implementation.
 
-9. **File scope.** Never modify files outside of `tests/`.
+9. **File scope.** Never modify files outside the explicit allow-list under
+   `## Outputs` above. In particular, never write under `tests/**/contract/**`,
+   `src/**`, `agents/**`, or `pipeline/**`.
 
 10. **Test dependencies.** If your generated tests require packages beyond the
     standard library and `src/backend/requirements.txt`, add them to
     `tests/requirements.txt`. Always verify imports are covered.
 
-## Anti-Patterns (will fail the red-phase gate)
+## Anti-Patterns (will fail the gate)
 
 - Defining `def classify(...)` (or similar SUT functions) inside `test_*.py`.
 - Defining constants like `DESIGN_KEYWORDS = frozenset([...])` inside a test
@@ -92,9 +124,17 @@ Practical consequences:
   references `app.*` or `src/frontend/src/*`.
 - Returning hardcoded values from a fixture computed via SUT-mirrored logic to
   satisfy assertions.
+- Writing tests that pin pre-existing baseline behavior such as `/health`,
+  `GET /`, build/preview Vite config, Procfile boot, or other scaffold contracts
+  whose implementation lives on `main` since project bootstrap. Those are
+  contract tests and belong outside your scope.
+- Placing a test directly at `tests/backend/test_*.py` or `tests/frontend/*.test.*`
+  (flat) — the file must live under a `unit/`, `integration/`, `component/`, or
+  `e2e/` subdirectory.
 
 ## Test Naming Convention
 
-- Backend: `test_<feature>_<scenario_snake_case>`
-- Frontend unit: `<Feature>.<scenario>.test.ts`
-- Frontend e2e: `<flow-name>.e2e.test.ts`
+- Backend: `tests/backend/{unit,integration}/test_<feature>.py`, with test
+  function names `test_<scenario_snake_case>`.
+- Frontend unit / component: `tests/frontend/{unit,component}/<Feature>.<scenario>.test.ts(x)`.
+- Frontend e2e: `tests/frontend/e2e/<flow-name>.e2e.test.ts(x)`.

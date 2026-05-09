@@ -36,14 +36,47 @@ if [ -z "$ALLOWED" ]; then
     exit 0
 fi
 
-# Include both modified (tracked) and added (untracked, not gitignored) files.
-# Plain `git diff --name-only` misses untracked files, which would let an
-# agent slip a brand-new file into a denied path before the workflow's
-# `git add` step.
-CHANGED=$(git -C "$REPO_ROOT" ls-files --modified --others --exclude-standard | sort -u)
+# Compute the file set attributable to the agent.
+#
+# The naive approach — "everything `git ls-files --modified --others
+# --exclude-standard` returns is the agent's writes" — is fragile because the
+# CI job runs other tools before the agent (npm install, npx skills, vitest,
+# pytest, …). Each of those can leave untracked files in the worktree, which
+# this validator would then misattribute to the agent unless every one of those
+# tool outputs is gitignored. That maintenance has failed three runs in a row
+# (skills-lock.json, .vite/, …).
+#
+# When $PRE_SNAPSHOT points to a file containing the same `git ls-files
+# --modified --others --exclude-standard` output captured *immediately before
+# the agent ran*, we subtract that set from the current set. The remainder is
+# what newly appeared (or newly changed) during the agent's run — i.e., what
+# the agent actually wrote. This makes the validator robust to any new tool a
+# future contributor adds to the workflow without requiring a corresponding
+# .gitignore entry.
+#
+# When $PRE_SNAPSHOT is unset (e.g. local invocation, or a workflow we haven't
+# updated yet), we fall back to the legacy behavior so this script is
+# backward-compatible.
+#
+# Known limitation: if a non-agent step creates an untracked, non-gitignored
+# file and the agent then *modifies the content* of that same file (rather
+# than creating something new), the validator will miss the modification —
+# both pre and post lists contain the same path. The realistic exposure is
+# tiny in this repo (lockfiles created by `npm install` fall under each
+# agent's scope rules anyway; every other known tool artifact is gitignored).
+# If this becomes a real concern, upgrade the snapshot to `sha256  path` and
+# diff by content hash.
+POST_LIST=$(git -C "$REPO_ROOT" ls-files --modified --others --exclude-standard | sort -u)
+
+if [ -n "${PRE_SNAPSHOT:-}" ] && [ -f "$PRE_SNAPSHOT" ]; then
+    CHANGED=$(comm -23 <(printf '%s\n' "$POST_LIST") <(sort -u "$PRE_SNAPSHOT"))
+else
+    echo "::warning::PRE_SNAPSHOT not set — falling back to legacy 'all-untracked-is-agent' attribution. Add a 'Snapshot worktree (pre-agent)' step to this job for accurate scope validation."
+    CHANGED="$POST_LIST"
+fi
 
 if [ -z "$CHANGED" ]; then
-    echo "No files changed — scope check passed"
+    echo "No files attributable to $AGENT_NAME — scope check passed"
     exit 0
 fi
 

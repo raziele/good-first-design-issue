@@ -29,7 +29,7 @@ jobs:
       branch_name: ${{ steps.create_branch.outputs.branch }}
       has_changes: ${{ steps.commit_tests.outputs.has_changes }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Create feature branch
         id: create_branch
@@ -39,12 +39,12 @@ jobs:
           echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "20"
 
@@ -56,12 +56,27 @@ jobs:
       - name: Install testgen skills
         run: npx skills@latest add https://github.com/mattpocock/skills/blob/main/skills/engineering/tdd/ --yes
 
+      - name: Snapshot worktree (pre-agent)
+        id: pre_snapshot
+        run: |
+          # Capture the worktree state immediately before the agent runs so
+          # validate_scope.sh can attribute file changes accurately. Anything
+          # already untracked at this point (skill installer outputs, npm/pip
+          # leftovers, etc.) is excluded from the agent's diff downstream.
+          snap="$RUNNER_TEMP/worktree-pre-agent-1.txt"
+          git ls-files --modified --others --exclude-standard | sort -u > "$snap"
+          echo "path=$snap" >> "$GITHUB_OUTPUT"
+          echo "Pre-agent worktree snapshot ($(wc -l < "$snap" | tr -d ' ') entries):"
+          sed 's/^/  /' "$snap" || true
+
       - name: Run Agent 1 — Test Generator
         env:
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
         run: python scripts/run_agent.py agent-1-testgen
 
       - name: Validate file scope
+        env:
+          PRE_SNAPSHOT: ${{ steps.pre_snapshot.outputs.path }}
         run: scripts/validate_scope.sh agent-1-testgen
 
       - name: Commit tests to feature branch
@@ -84,18 +99,18 @@ jobs:
     if: needs.agent_1_testgen.outputs.has_changes == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ needs.agent_1_testgen.outputs.branch_name }}
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "20"
 
@@ -183,9 +198,10 @@ jobs:
             while IFS= read -r f; do
               [ -z "$f" ] && continue
               ran_any=$((ran_any + 1))
+              pytest_log="$(mktemp)"
               set +e
-              python -m pytest "$f" -v --tb=short --color=yes
-              rc=$?
+              python -m pytest "$f" -v --tb=short --color=yes 2>&1 | tee "$pytest_log"
+              rc=${PIPESTATUS[0]}
               set -e
               case "$rc" in
                 0)
@@ -197,9 +213,22 @@ jobs:
                   unexpected_pass=$((unexpected_pass + 1))
                   ;;
                 *)
-                  echo "OK: $f failed as expected (exit $rc)."
+                  # Distinguish "tests ran and at least one failed" (good)
+                  # from "pytest never finished a test run" (config bug —
+                  # plugin load crash, conftest import error, internal error).
+                  # A successful pytest run always emits a final summary line
+                  # like "===== 1 failed in 0.05s =====" or "===== no tests ran in 0.01s =====".
+                  # If that line is absent, pytest crashed before running tests
+                  # and exit-code-only checks would falsely treat it as expected red.
+                  if grep -Eq '^=+ .* in [0-9]+(\.[0-9]+)?s' "$pytest_log"; then
+                    echo "OK: $f failed as expected (exit $rc)."
+                  else
+                    echo "::error file=$f::pytest exited $rc but produced no test summary line (likely a plugin-load, conftest, or internal error before any test ran). Treating as a config bug, not expected red."
+                    unexpected_pass=$((unexpected_pass + 1))
+                  fi
                   ;;
               esac
+              rm -f "$pytest_log"
             done < "$CHANGED_BACKEND_TESTS"
           fi
 
@@ -243,17 +272,17 @@ jobs:
     if: needs.agent_1_testgen.outputs.has_changes == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ needs.agent_1_testgen.outputs.branch_name }}
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "20"
 
@@ -272,12 +301,27 @@ jobs:
       - name: Install codegen skills
         run: npx skills@latest add https://github.com/pbakaus/impeccable --yes
 
+      - name: Snapshot worktree (pre-agent)
+        id: pre_snapshot
+        run: |
+          # See agent_1_testgen for rationale. Critical for agent-2 because its
+          # prompt instructs it to run pytest/vitest as part of self-verification,
+          # which leaves cache artifacts (.vite/, .pytest_cache/, …) that would
+          # otherwise be misattributed to the agent.
+          snap="$RUNNER_TEMP/worktree-pre-agent-2.txt"
+          git ls-files --modified --others --exclude-standard | sort -u > "$snap"
+          echo "path=$snap" >> "$GITHUB_OUTPUT"
+          echo "Pre-agent worktree snapshot ($(wc -l < "$snap" | tr -d ' ') entries):"
+          sed 's/^/  /' "$snap" || true
+
       - name: Run Agent 2 — Code Generator
         env:
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
         run: python scripts/run_agent.py agent-2-codegen
 
       - name: Validate file scope
+        env:
+          PRE_SNAPSHOT: ${{ steps.pre_snapshot.outputs.path }}
         run: scripts/validate_scope.sh agent-2-codegen
 
       - name: Commit code to feature branch
@@ -296,17 +340,17 @@ jobs:
     needs: [agent_1_testgen, agent_2_codegen]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ needs.agent_1_testgen.outputs.branch_name }}
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "20"
 
@@ -332,18 +376,18 @@ jobs:
     needs: [agent_1_testgen, post_codegen_tests]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ needs.agent_1_testgen.outputs.branch_name }}
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "20"
 
@@ -354,6 +398,19 @@ jobs:
 
       - name: Install reviewer skills
         run: npx skills@latest add https://github.com/imbue-ai/vet --yes
+
+      - name: Snapshot worktree (pre-agent)
+        id: pre_snapshot
+        run: |
+          # mkdir pipeline/reports is intentionally NOT done here — it lives in
+          # the agent step below. We snapshot before that so the directory
+          # creation is attributed to the agent (which is allowed under
+          # write: ["pipeline/reports/**"]).
+          snap="$RUNNER_TEMP/worktree-pre-agent-3.txt"
+          git ls-files --modified --others --exclude-standard | sort -u > "$snap"
+          echo "path=$snap" >> "$GITHUB_OUTPUT"
+          echo "Pre-agent worktree snapshot ($(wc -l < "$snap" | tr -d ' ') entries):"
+          sed 's/^/  /' "$snap" || true
 
       - name: Run Agent 3 — Reviewer
         env:
@@ -375,6 +432,8 @@ jobs:
           rm -f "${DIFF_FILE}"
 
       - name: Validate file scope
+        env:
+          PRE_SNAPSHOT: ${{ steps.pre_snapshot.outputs.path }}
         run: scripts/validate_scope.sh agent-3-review
 
       - name: Verify review report exists
@@ -389,7 +448,7 @@ jobs:
 
       - name: Upload review report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: review-report
           path: pipeline/reports/
@@ -398,7 +457,7 @@ jobs:
     needs: [agent_1_testgen, agent_3_review]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ needs.agent_1_testgen.outputs.branch_name }}
 

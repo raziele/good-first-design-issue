@@ -171,3 +171,210 @@ rules is a gate failure (delete the redundant test or drive net-new behavior).
 - When introducing a new pre-agent step that writes to the repo, audit
   `.gitignore` immediately. If the artifact has no source-of-truth value,
   ignore it.
+
+---
+
+## 2026-05-09 — Run #25598513599 (main, workflow_dispatch)
+
+### Issues Found
+
+- false-green / silent-gate-bypass: `pre_codegen_red_phase` reported
+  `OK: failed as expected (exit 1)` for **every** changed backend test file
+  (`test_classification.py`, `test_etl.py`, `test_issues.py`, `test_search.py`).
+  No tests actually ran. Root cause: agent-1-testgen added
+  `pytest-freezegun==0.4.2` to `tests/requirements.txt`. That package was
+  last released in 2019 and `pytest_freezegun.py` line 5 does
+  `from distutils.version import LooseVersion`. Python 3.12 removed
+  `distutils` (PEP 632), so pytest crashed inside `parse(args)` →
+  `load_setuptools_entrypoints("pytest11")` before any test was collected.
+  Pytest exited 1 → the gate's `case "$rc"` fell into `*)` →
+  `OK: $f failed as expected`. The 2026-05-08 rule "red-phase gates must
+  validate that something was actually run" was bypassed by a different
+  failure mode (plugin-load crash vs. zero collection). Codegen then ran
+  on a hollow red signal. The pipeline only got caught downstream by
+  Issue #2 below; without that, agent-2 would have committed code that
+  was never actually tested against the new tests.
+- scope-violation / structural-gap (blocker): `agent_2_codegen` →
+  `Validate file scope` failed with
+  `agent-2-codegen modified files outside its allowed write scope:
+  .vite/vitest/results.json`. Agent-2's actual outputs were correct
+  (45 backend + 66 frontend tests passing in its local run). The
+  violation came from vitest writing its results cache into
+  `src/frontend/.vite/vitest/results.json` when agent-2 ran tests as
+  part of its own self-verification. Same class as PR #14
+  `skills-lock.json`: a CI-tooling artifact that the validator's
+  `git ls-files --modified --others --exclude-standard` correctly
+  surfaces, but which is not actually agent-attributable. The
+  cross-cutting rule from 2026-05-09a was applied narrowly only to
+  `skills-lock.json` and missed every other tool that writes to the
+  worktree.
+- deprecation (24-day fuse): every workflow used Node-20 actions
+  (`actions/checkout@v4`, `actions/setup-node@v4`, `actions/setup-python@v5`,
+  `actions/upload-artifact@v4`). GitHub will force these to run on Node 24
+  starting June 2, 2026.
+
+### Fixes Applied
+
+- `.github/workflows/specs-to-code.yml` — "Verify red phase" backend branch
+  now `tee`s pytest output to a tempfile and, on non-zero non-5 exit,
+  requires a pytest summary line (`^=+ .* in [0-9]+(\.[0-9]+)?s`) in the
+  output. Absence of the summary indicates pytest never finished a run
+  (plugin-load crash, conftest import error, internal error) and is now
+  treated as a config bug — same severity as exit 5. The previous
+  exit-code-only check would let any pre-collection crash slip through
+  as "expected red."
+- `.gitignore` — added `.vite/` to ignore vitest's cache directory. With
+  this, the validator's "untracked = agent's writes" assumption holds
+  again whenever agent-2 (or anything else) runs vitest in its job.
+- `agents/agent-1-testgen/prompt.md` — added a hard rule to the "Test
+  dependencies" section: packages must be maintained for Python 3.12+.
+  Specifically forbids `pytest-freezegun` and names `pytest-freezer` or
+  direct `freezegun.freeze_time` as the maintained alternatives. Also
+  forbids any pytest plugin un-released for >2 years that imports
+  removed-in-3.12 stdlib modules (`distutils`, `imp`, `asynchat`,
+  `asyncore`, `smtpd`).
+- All 4 workflow files — bumped to Node-24-native action versions:
+  `actions/checkout@v5`, `actions/setup-node@v6`, `actions/setup-python@v6`,
+  `actions/upload-artifact@v6`. Done now rather than waiting for the
+  forced cutover, since the runtime swap mid-cycle could mask any
+  action-level breakage as a pipeline regression.
+
+### Structural Gaps Identified
+
+- The red-phase gate's exit-code switch had a third silent class of
+  failure beyond "exit 0 = pass" and "exit 5 = no collection": pytest
+  exiting non-zero **before** running any test. The 2026-05-08 fix
+  closed the exit-5 hole but assumed all other non-zero exits meant
+  "tests ran and at least one failed." That assumption is wrong for
+  any failure during `parse(args)` (plugin loading, option parsing,
+  `INTERNALERROR>`). The proper invariant is: "the gate only accepts
+  red if pytest produced evidence of having run a test session."
+- The cross-cutting rule from 2026-05-09a (gitignore CI tool outputs)
+  was applied only to the immediate offender. The pattern "every
+  CI-step or local-tool write to the worktree must be gitignored" was
+  not enforced as a project-wide invariant — vitest's `.vite/` was
+  the next instance, and there will be more (e.g. coverage reports,
+  cypress screenshots, playwright traces if added later).
+- Agent-2's prompt likely tells it to "verify locally before declaring
+  done." Doing so inside the same job as scope validation creates an
+  artifact-leakage surface for any tool that writes outside
+  `node_modules/`. Future option: either run agent-2's verification in
+  a sandboxed temp dir, or run it in a separate job after scope
+  validation.
+
+### Rules Derived
+
+- Red-phase gates **must require evidence of a test session**, not just
+  a non-zero exit code. For pytest: parse output for the summary line
+  `^=+ .* in N.NNs`. For vitest: parse for the test results table or a
+  `Tests N passed | N failed` summary. Exit-code-only logic is still
+  fundamentally exploitable.
+- Maintained-package guard belongs in the testgen prompt, but the
+  durable defense is the gate. Prompt-level "don't use abandoned
+  packages" rules degrade over time; a gate that requires actual
+  test execution catches every future variant of the same class
+  (broken plugin, broken conftest, broken assertion-rewrite).
+- For every CI tool that runs in any agent's job, **audit `.gitignore`
+  for its scratch artifacts before merging the workflow change**.
+  The current known list: `.cursor/skills/`, `.agents/skills/`,
+  `skills-lock.json`, `.vite/`. Coverage outputs (`htmlcov/`, `.coverage`,
+  `coverage.xml`), playwright (`test-results/`, `playwright-report/`),
+  and pytest cache (`.pytest_cache/`) are likely future additions.
+- When a GitHub Actions runtime deprecation has a date attached
+  (e.g. Node 20 → Node 24 force on 2026-06-02), bump action versions
+  on a non-feature day **before** the cutoff. A forced runtime swap
+  during an unrelated agent run will look like the agent broke the
+  pipeline.
+
+---
+
+## 2026-05-09b — Run #25598513599 (revisit, structural fix)
+
+### Re-evaluation
+
+The patch from the previous entry — `gitignore .vite/` — fixes the
+immediate symptom but does not address the structural issue that
+caused three consecutive runs to fail at scope validation for three
+different non-agent tools (`skills-lock.json`, `.vite/vitest/results.json`,
+and the next inevitable mole). The validator's invariant —
+"`git ls-files --modified --others --exclude-standard` returns the
+agent's writes" — is only true when every CI step before the agent in
+the same job either writes outside the worktree or writes to gitignored
+paths. That maintenance burden has failed every time it's been
+tested; relying on it indefinitely is a known-bad design.
+
+Inventory of pre-agent-step writers in the current pipeline:
+
+- `npx skills@latest add` → `skills-lock.json` (now gitignored),
+  `.cursor/skills/`, `.agents/skills/`
+- `npm install` (in `src/frontend`) → `node_modules/` (gitignored) and
+  potentially `package-lock.json` (NOT gitignored — this is the next
+  latent failure)
+- Agent-2's self-verification per its own prompt: `pytest`
+  (`.pytest_cache/`, `__pycache__/`, optionally `.coverage`) and
+  `vitest` (`.vite/`, optionally `coverage/`)
+- Future plausible additions: playwright, cypress, eslint cache,
+  tsbuildinfo, …
+
+### Fixes Applied
+
+- `scripts/validate_scope.sh`: when `$PRE_SNAPSHOT` is set to a path
+  containing the same `git ls-files --modified --others
+  --exclude-standard` output captured before the agent ran, the
+  validator now subtracts that set from the post-agent set via `comm
+  -23`. Whatever existed in the worktree before the agent — regardless
+  of which tool put it there — is excluded from the agent's
+  attribution. When the env var is unset, falls back to the legacy
+  behavior with a `::warning::` so this script remains
+  backward-compatible during rollout.
+- `.github/workflows/specs-to-code.yml`: added a `Snapshot worktree
+  (pre-agent)` step before each of `agent_1_testgen`, `agent_2_codegen`,
+  and `agent_3_review` invocations. Each step writes the snapshot to
+  `$RUNNER_TEMP/worktree-pre-agent-N.txt` and exposes the path via
+  `steps.pre_snapshot.outputs.path`. The corresponding `Validate file
+  scope` step now passes that path as the `PRE_SNAPSHOT` env var.
+- `.github/workflows/pr-approved-docgen.yml`: same pattern for
+  `agent_4_docgen`, even though that job has fewer pollution sources
+  today — consistency now prevents the next contributor from
+  introducing one without thinking about scope.
+- `.gitignore` retained its `.vite/`, `skills-lock.json`,
+  `.cursor/skills/`, `.agents/skills/` entries as belt-and-suspenders.
+  Those entries are no longer required for scope validation to work,
+  but they keep the validator honest if a future contributor adds a
+  new agent job and forgets the pre-snapshot step (in which case the
+  legacy fallback kicks in with a warning).
+
+### Structural Gaps Identified
+
+- The original validator conflated "what's in the worktree right now"
+  with "what the agent wrote." That conflation is the actual bug; the
+  three `.gitignore` patches were treating its symptom.
+- "Audit `.gitignore` for every CI tool" is a project-wide invariant
+  that depends on humans remembering. Three consecutive failures
+  proved this won't scale — the invariant needs to be embedded in the
+  tooling, not in human discipline.
+- `package-lock.json` was a latent next failure: today's
+  frontend has no committed lockfile, so `npm install` would create one
+  in agent-2's job and the validator would have flagged it as soon as
+  `.vite/` was fixed. The structural fix closes that case without
+  requiring it to fail first.
+
+### Rules Derived
+
+- **Validators that attribute file changes to an actor must use a
+  pre/post snapshot, not a single post-state observation.** "Untracked
+  files in the worktree right now" is not a sound proxy for "files this
+  actor wrote" when other actors share the same workspace before or
+  during the run.
+- **For every new agent job, add the pre-snapshot step in the same PR
+  as the agent invocation.** Co-locating these in one diff makes the
+  pattern self-enforcing — reviewers see them together.
+- **Keep cheap defense in depth.** Gitignoring tool outputs (`.vite/`,
+  `skills-lock.json`, etc.) costs nothing and prevents the legacy
+  fallback from generating noise if the pre-snapshot step is ever
+  omitted. Don't strip these entries even after the structural fix
+  lands.
+- **The `::warning::` in the validator's legacy path is the canary.**
+  If a future CI run logs "PRE_SNAPSHOT not set," that's the signal
+  that an agent job was added without the snapshot step. Watch for it
+  in the next few runs.

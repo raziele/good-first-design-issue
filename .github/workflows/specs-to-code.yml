@@ -94,6 +94,21 @@ jobs:
             echo "has_changes=true" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Generate and commit SUT stubs
+        if: steps.commit_tests.outputs.has_changes == 'true'
+        run: |
+          set -euo pipefail
+          python scripts/generate_sut_stubs.py --repo-root "${{ github.workspace }}"
+          git config user.name "agent-1-testgen[bot]"
+          git config user.email "agent-1-testgen[bot]@users.noreply.github.com"
+          git add src/backend/app
+          if git diff --cached --quiet; then
+            echo "No SUT stub changes."
+          else
+            git commit -m "chore: generate SUT stubs for app imports [run ${{ github.run_id }}]"
+            git push origin HEAD
+          fi
+
   pre_codegen_red_phase:
     needs: agent_1_testgen
     if: needs.agent_1_testgen.outputs.has_changes == 'true'

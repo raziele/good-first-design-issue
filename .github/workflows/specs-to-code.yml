@@ -383,6 +383,15 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}/src/backend
         run: python -m pytest tests/backend/ -vv --tb=short --color=yes
 
+      - name: Verify no SUT stubs remain in app package
+        run: |
+          set -euo pipefail
+          if grep -R --include='*.py' -n "SUT stub — implement in agent-2-codegen" src/backend/app 2>/dev/null; then
+            echo "::error::Stub marker string still present under src/backend/app"
+            exit 1
+          fi
+          python scripts/check_app_no_notimplemented.py --app-root "${{ github.workspace }}/src/backend/app"
+
       - name: Run frontend tests
         working-directory: src/frontend
         run: npx vitest run ../../tests/frontend --reporter=verbose

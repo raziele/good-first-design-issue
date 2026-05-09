@@ -11,13 +11,13 @@ jobs:
       startsWith(github.event.pull_request.head.ref, 'agent/feature-')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
@@ -26,12 +26,27 @@ jobs:
           curl https://cursor.com/install -fsS | bash
           pip install pyyaml
 
+      - name: Snapshot worktree (pre-agent)
+        id: pre_snapshot
+        run: |
+          # See specs-to-code.yml for rationale. Even though agent-4's job has
+          # fewer pollution sources (no npm install, no skill installer), we
+          # apply the same pattern across all four agent jobs for consistency
+          # and to defend against future additions to this job.
+          snap="$RUNNER_TEMP/worktree-pre-agent-4.txt"
+          git ls-files --modified --others --exclude-standard | sort -u > "$snap"
+          echo "path=$snap" >> "$GITHUB_OUTPUT"
+          echo "Pre-agent worktree snapshot ($(wc -l < "$snap" | tr -d ' ') entries):"
+          sed 's/^/  /' "$snap" || true
+
       - name: Run Agent 4 — Doc Generator
         env:
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
         run: python scripts/run_agent.py agent-4-docgen
 
       - name: Validate file scope
+        env:
+          PRE_SNAPSHOT: ${{ steps.pre_snapshot.outputs.path }}
         run: scripts/validate_scope.sh agent-4-docgen
 
       - name: Commit updated docs to PR branch

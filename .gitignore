@@ -32,6 +32,11 @@ pipeline/reports/*.json
 .agents/skills/
 skills-lock.json
 
+# Test runner caches (vitest writes results.json to .vite/ when run locally
+# inside src/frontend; never source-of-truth, would otherwise be attributed to
+# whichever agent ran tests in its job)
+.vite/
+
 # Local-only files
 designboard.zip
 user-data/

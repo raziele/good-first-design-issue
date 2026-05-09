@@ -113,6 +113,23 @@ Practical consequences:
     standard library and `src/backend/requirements.txt`, add them to
     `tests/requirements.txt`. Always verify imports are covered.
 
+    Packages must be **maintained for Python 3.12+**. CI runs Python 3.12,
+    which removed `distutils` (PEP 632). Any dep that imports `distutils` will
+    crash pytest at plugin-load time and either (a) fail the gate as a
+    config bug (post-hardening) or (b) silently bypass the gate (pre-hardening).
+    Specifically forbidden:
+
+    - **`pytest-freezegun`** — last released 2019, imports `distutils.version`,
+      broken on Python 3.12. Use **`pytest-freezer`** (maintained fork) or
+      apply `freezegun.freeze_time` directly as a decorator/context manager.
+    - Any other unmaintained pytest plugin that has not had a release in the
+      last 2 years and imports stdlib modules removed in 3.12 (`distutils`,
+      `imp`, `asynchat`, `asyncore`, `smtpd`).
+
+    If unsure whether a package is maintained, prefer the smallest viable
+    dependency surface — use the underlying library directly rather than a
+    thin pytest wrapper.
+
 ## Anti-Patterns (will fail the gate)
 
 - Defining `def classify(...)` (or similar SUT functions) inside `test_*.py`.

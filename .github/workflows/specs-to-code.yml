@@ -228,17 +228,17 @@ jobs:
                   unexpected_pass=$((unexpected_pass + 1))
                   ;;
                 *)
-                  # Distinguish "tests ran and at least one failed" (good)
-                  # from "pytest never finished a test run" (config bug —
-                  # plugin load crash, conftest import error, internal error).
-                  # A successful pytest run always emits a final summary line
-                  # like "===== 1 failed in 0.05s =====" or "===== no tests ran in 0.01s =====".
-                  # If that line is absent, pytest crashed before running tests
-                  # and exit-code-only checks would falsely treat it as expected red.
-                  if grep -Eq '^=+ .* in [0-9]+(\.[0-9]+)?s' "$pytest_log"; then
-                    echo "OK: $f failed as expected (exit $rc)."
+                  # Stub-first primary path: summary line AND at least one failed test.
+                  # Fallback: collection-time missing app.* module (stub generator gap
+                  # or pre-stub branch).
+                  if grep -Eq '^=+ .* in [0-9]+(\.[0-9]+)?s' "$pytest_log" \
+                    && grep -Eq '[0-9]+ failed' "$pytest_log"; then
+                    echo "OK: $f failed as expected (exit $rc, test session with ≥1 failure)."
+                  elif grep -qF "ImportError while importing test module" "$pytest_log" \
+                    && grep -qE "ModuleNotFoundError: No module named '?app\." "$pytest_log"; then
+                    echo "OK: $f failed as expected (exit $rc, collection-time SUT-import error — check stub generator coverage)."
                   else
-                    echo "::error file=$f::pytest exited $rc but produced no test summary line (likely a plugin-load, conftest, or internal error before any test ran). Treating as a config bug, not expected red."
+                    echo "::error file=$f::pytest exited $rc but produced neither (summary + failed tests) nor a collection-time SUT-import error (likely a plugin-load, conftest, or internal error before any test ran, or an ImportError on a non-SUT dependency). Treating as a config bug, not expected red."
                     unexpected_pass=$((unexpected_pass + 1))
                   fi
                   ;;

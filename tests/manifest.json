@@ -1,5 +1,209 @@
 {
-  "mappings": [],
-  "unmapped_specs": [],
+  "mappings": [
+    {
+      "rule_id": "RULE-CLS-001",
+      "spec_file": "specs/behavior/classification.spec.md",
+      "tests": [
+        "tests/backend/unit/test_classification.py::TestRuleCLS001AutomatedClassification::test_design_issue_classified_as_relevant",
+        "tests/backend/unit/test_classification.py::TestRuleCLS001AutomatedClassification::test_backend_issue_classified_as_not_relevant"
+      ]
+    },
+    {
+      "rule_id": "RULE-CLS-002",
+      "spec_file": "specs/behavior/classification.spec.md",
+      "tests": [
+        "tests/backend/unit/test_classification.py::TestRuleCLS002EmptyDescriptions::test_empty_description_is_not_relevant",
+        "tests/backend/unit/test_classification.py::TestRuleCLS002EmptyDescriptions::test_placeholder_only_description_is_not_relevant"
+      ]
+    },
+    {
+      "rule_id": "RULE-CLS-003",
+      "spec_file": "specs/behavior/classification.spec.md",
+      "tests": [
+        "tests/backend/unit/test_classification.py::TestRuleCLS003ClaimedIssuesRemainRelevant::test_claimed_design_issue_is_still_relevant_but_flagged"
+      ]
+    },
+    {
+      "rule_id": "RULE-CLS-004",
+      "spec_file": "specs/behavior/classification.spec.md",
+      "tests": [
+        "tests/backend/unit/test_classification.py::TestRuleCLS004ExclusionRules::test_exclusion_pattern_classifies_as_not_relevant[test coverage, unit test, QA case]",
+        "tests/backend/unit/test_classification.py::TestRuleCLS004ExclusionRules::test_exclusion_pattern_classifies_as_not_relevant[api endpoint, backend, database migration]",
+        "tests/backend/unit/test_classification.py::TestRuleCLS004ExclusionRules::test_exclusion_pattern_classifies_as_not_relevant[refactor, rename X to Y]",
+        "tests/backend/unit/test_classification.py::TestRuleCLS004ExclusionRules::test_exclusion_pattern_classifies_as_not_relevant[implement in code, code base for]",
+        "tests/backend/unit/test_classification.py::TestRuleCLS004ExclusionRules::test_exclusion_pattern_classifies_as_not_relevant[sprite sheet, UTF files, game assets]",
+        "tests/backend/unit/test_classification.py::TestRuleCLS004ExclusionRules::test_exclusion_patterns_constant_exists"
+      ]
+    },
+    {
+      "rule_id": "RULE-ETL-001",
+      "spec_file": "specs/behavior/etl.spec.md",
+      "tests": []
+    },
+    {
+      "rule_id": "RULE-ETL-002",
+      "spec_file": "specs/behavior/etl.spec.md",
+      "tests": [
+        "tests/backend/unit/test_etl.py::TestRuleETL002AgeFilter::test_issue_over_90_days_excluded_on_initial_fetch",
+        "tests/backend/unit/test_etl.py::TestRuleETL002AgeFilter::test_issue_within_90_days_included_on_initial_fetch",
+        "tests/backend/unit/test_etl.py::TestRuleETL002AgeFilter::test_boundary_exactly_90_days_excluded"
+      ]
+    },
+    {
+      "rule_id": "RULE-ETL-003",
+      "spec_file": "specs/behavior/etl.spec.md",
+      "tests": []
+    },
+    {
+      "rule_id": "RULE-ETL-004",
+      "spec_file": "specs/behavior/etl.spec.md",
+      "tests": [
+        "tests/backend/unit/test_etl.py::TestRuleETL004ClosedIssuesArchived::test_closed_issue_status_becomes_archived"
+      ]
+    },
+    {
+      "rule_id": "RULE-ETL-005",
+      "spec_file": "specs/behavior/etl.spec.md",
+      "tests": [
+        "tests/backend/unit/test_etl.py::TestRuleETL005Enrichment::test_enrichment_result_has_required_fields",
+        "tests/backend/unit/test_etl.py::TestRuleETL005Enrichment::test_complexity_values_are_valid",
+        "tests/backend/unit/test_etl.py::TestRuleETL005Enrichment::test_seniority_values_are_valid",
+        "tests/backend/unit/test_etl.py::TestRuleETL005Enrichment::test_attractiveness_rating_outside_range_raises"
+      ]
+    },
+    {
+      "rule_id": "RULE-ETL-006",
+      "spec_file": "specs/behavior/etl.spec.md",
+      "tests": [
+        "tests/backend/unit/test_etl.py::TestRuleETL006MediaDetection::test_markdown_image_sets_has_media_true",
+        "tests/backend/unit/test_etl.py::TestRuleETL006MediaDetection::test_plain_text_sets_has_media_false",
+        "tests/backend/unit/test_etl.py::TestRuleETL006MediaDetection::test_external_link_sets_has_media_true",
+        "tests/backend/unit/test_etl.py::TestRuleETL006MediaDetection::test_empty_description_sets_has_media_false"
+      ]
+    },
+    {
+      "rule_id": "RULE-ISS-001",
+      "spec_file": "specs/behavior/issues.spec.md",
+      "tests": [
+        "tests/backend/unit/test_issues.py::TestRuleISS001DisplayOnlyRelevantActive::test_relevant_active_issue_appears",
+        "tests/backend/unit/test_issues.py::TestRuleISS001DisplayOnlyRelevantActive::test_not_relevant_issue_is_excluded",
+        "tests/backend/unit/test_issues.py::TestRuleISS001DisplayOnlyRelevantActive::test_archived_issue_is_excluded",
+        "tests/backend/unit/test_issues.py::TestRuleISS001DisplayOnlyRelevantActive::test_not_relevant_and_archived_both_excluded",
+        "tests/frontend/e2e/browse-issues.e2e.test.tsx > Browse Issues Flow — RULE-ISS-001: only relevant active issues shown > renders only relevant active issues"
+      ]
+    },
+    {
+      "rule_id": "RULE-ISS-002",
+      "spec_file": "specs/behavior/issues.spec.md",
+      "tests": [
+        "tests/backend/unit/test_issues.py::TestRuleISS002CardTruncation::test_long_description_truncated_to_200_chars",
+        "tests/backend/unit/test_issues.py::TestRuleISS002CardTruncation::test_short_description_not_truncated",
+        "tests/backend/unit/test_issues.py::TestRuleISS002CardTruncation::test_truncated_description_ends_with_ellipsis",
+        "tests/frontend/component/IssueCard.display.test.tsx > IssueCard — RULE-ISS-002: card shows required elements > displays repo name",
+        "tests/frontend/component/IssueCard.display.test.tsx > IssueCard — RULE-ISS-002: card shows required elements > displays issue title",
+        "tests/frontend/component/IssueCard.display.test.tsx > IssueCard — RULE-ISS-002: card shows required elements > displays truncated description",
+        "tests/frontend/unit/issueUtils.freshness.test.ts > truncateDescription — RULE-ISS-002"
+      ]
+    },
+    {
+      "rule_id": "RULE-ISS-003",
+      "spec_file": "specs/behavior/issues.spec.md",
+      "tests": [
+        "tests/frontend/component/IssueDetail.display.test.tsx > IssueDetail — RULE-ISS-003: detail view shows full information"
+      ]
+    },
+    {
+      "rule_id": "RULE-ISS-004",
+      "spec_file": "specs/behavior/issues.spec.md",
+      "tests": [
+        "tests/backend/unit/test_issues.py::TestRuleISS004ClaimedIssues::test_claimed_issue_is_included_in_listing",
+        "tests/backend/unit/test_issues.py::TestRuleISS004ClaimedIssues::test_claimed_flag_preserved_through_filter",
+        "tests/frontend/component/IssueCard.display.test.tsx > IssueCard — RULE-ISS-004: claimed issues are marked",
+        "tests/frontend/component/IssueDetail.display.test.tsx > IssueDetail — RULE-ISS-004: claimed issues are marked"
+      ]
+    },
+    {
+      "rule_id": "RULE-ISS-005",
+      "spec_file": "specs/behavior/issues.spec.md",
+      "tests": [
+        "tests/backend/unit/test_issues.py::TestRuleISS005DefaultSortByFreshness::test_issues_sorted_by_freshness_ascending",
+        "tests/frontend/unit/issueUtils.freshness.test.ts > sortByFreshness — RULE-ISS-005",
+        "tests/frontend/e2e/browse-issues.e2e.test.tsx > Browse Issues Flow — RULE-ISS-005: default sort by freshness"
+      ]
+    },
+    {
+      "rule_id": "RULE-SRC-001",
+      "spec_file": "specs/behavior/search.spec.md",
+      "tests": [
+        "tests/backend/unit/test_search.py::TestRuleSRC001FullTextSearch::test_search_matches_title",
+        "tests/backend/unit/test_search.py::TestRuleSRC001FullTextSearch::test_search_matches_description",
+        "tests/backend/unit/test_search.py::TestRuleSRC001FullTextSearch::test_search_no_results_for_unknown_term",
+        "tests/backend/unit/test_search.py::TestRuleSRC001FullTextSearch::test_search_is_case_insensitive",
+        "tests/frontend/component/SearchFilter.interaction.test.tsx > SearchFilterBar — RULE-SRC-001: full-text search"
+      ]
+    },
+    {
+      "rule_id": "RULE-SRC-002",
+      "spec_file": "specs/behavior/search.spec.md",
+      "tests": [
+        "tests/backend/unit/test_search.py::TestRuleSRC002FreshnessFilter::test_freshness_filter[7-...]",
+        "tests/backend/unit/test_search.py::TestRuleSRC002FreshnessFilter::test_freshness_filter[30-...]",
+        "tests/backend/unit/test_search.py::TestRuleSRC002FreshnessFilter::test_freshness_filter[90-...]",
+        "tests/backend/unit/test_search.py::TestRuleSRC002FreshnessFilter::test_freshness_filter[None-...]",
+        "tests/frontend/component/SearchFilter.interaction.test.tsx > SearchFilterBar — RULE-SRC-002: freshness filter options",
+        "tests/frontend/unit/issueUtils.freshness.test.ts > applyFreshnessFilter — RULE-SRC-002"
+      ]
+    },
+    {
+      "rule_id": "RULE-SRC-003",
+      "spec_file": "specs/behavior/search.spec.md",
+      "tests": [
+        "tests/backend/unit/test_search.py::TestRuleSRC003CombinedSearchAndFilter::test_combined_search_and_freshness_filter",
+        "tests/backend/unit/test_search.py::TestRuleSRC003CombinedSearchAndFilter::test_no_results_when_filter_excludes_all_matches",
+        "tests/frontend/unit/issueUtils.freshness.test.ts > combineSearchAndFilter — RULE-SRC-003"
+      ]
+    },
+    {
+      "rule_id": "RULE-SRC-004",
+      "spec_file": "specs/behavior/search.spec.md",
+      "tests": [
+        "tests/frontend/component/SearchFilter.interaction.test.tsx > SearchFilterBar — RULE-SRC-004: mobile bottom sheet for filters"
+      ]
+    },
+    {
+      "rule_id": "RULE-CLM-001",
+      "spec_file": "specs/behavior/claim.spec.md",
+      "tests": [
+        "tests/frontend/component/ClaimModal.interaction.test.tsx > ClaimModal — RULE-CLM-001: claim action offers two options",
+        "tests/frontend/e2e/claim-issue.e2e.test.tsx > Claim Issue Flow — RULE-CLM-001: claim modal appears with two options"
+      ]
+    },
+    {
+      "rule_id": "RULE-CLM-002",
+      "spec_file": "specs/behavior/claim.spec.md",
+      "tests": [
+        "tests/frontend/component/ClaimModal.interaction.test.tsx > ClaimModal — RULE-CLM-002: claim comment is AI-generated"
+      ]
+    },
+    {
+      "rule_id": "RULE-CLM-003",
+      "spec_file": "specs/behavior/claim.spec.md",
+      "tests": [
+        "tests/frontend/e2e/claim-issue.e2e.test.tsx > Claim Issue Flow — RULE-CLM-003: no local claim tracking"
+      ]
+    },
+    {
+      "rule_id": "RULE-CLM-004",
+      "spec_file": "specs/behavior/claim.spec.md",
+      "tests": [
+        "tests/frontend/component/ClaimModal.interaction.test.tsx > ClaimModal — RULE-CLM-004: no blocking for already-claimed issues",
+        "tests/frontend/e2e/claim-issue.e2e.test.tsx > Claim Issue Flow — RULE-CLM-004: already-claimed issue shows no blocking"
+      ]
+    }
+  ],
+  "unmapped_specs": [
+    "RULE-ETL-001 (daily automated refresh — tested at integration/CI level, not unit)",
+    "RULE-ETL-003 (issue update on refresh — requires DB integration test)"
+  ],
   "orphaned_tests": []
 }

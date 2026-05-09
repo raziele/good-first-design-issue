@@ -30,6 +30,7 @@ pipeline/reports/*.json
 # Agent skills (installed ephemerally per CI job — not committed)
 .cursor/skills/
 .agents/skills/
+skills-lock.json
 
 # Local-only files
 designboard.zip

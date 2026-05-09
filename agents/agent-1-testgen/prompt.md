@@ -38,6 +38,16 @@ The red-phase gate is **diff-scoped**: it identifies the test files you changed
 of those files individually. Pre-existing unchanged tests on `main` are not
 re-evaluated and may pass — they represent already-implemented behavior.
 
+**Stub-first pipeline (backend):** After your tests are pushed, CI runs a
+deterministic script that parses `from app.<module> import <name>` in
+`tests/backend/**` (skipping `contract/`) and writes **function stubs** under
+`src/backend/app/` that raise `NotImplementedError` with a fixed marker string.
+Imports must use that form — not `from app import ...` or `import *`. For the
+current MVP, imported names must be **lowercase** (factory functions); class
+imports are rejected by the stub generator until Phase 1b. After stubs exist,
+red-phase expects **assertion failures** (normal pytest failures), not missing
+module errors.
+
 For every test file you add or modify in this run, that file must **fail**
 against the current `origin/main` source tree — either at import time (the SUT
 module does not yet exist) or at assertion time (the SUT exists but does not

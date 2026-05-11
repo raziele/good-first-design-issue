@@ -9,6 +9,14 @@ on:
       - "specs/**"
       - ".github/workflows/specs-to-code.yml"
   workflow_dispatch:
+    inputs:
+      full_pipeline_on_branch:
+        description: >-
+          Run agent-1 through open-pr from the selected ref (normally only main).
+          Uses Cursor API; use for CI debugging without merging to main.
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -16,14 +24,18 @@ permissions:
 
 jobs:
   branch_preflight:
-    if: github.ref != 'refs/heads/main'
+    if: >-
+      github.ref != 'refs/heads/main' &&
+      !(github.event_name == 'workflow_dispatch' && github.event.inputs.full_pipeline_on_branch == 'true')
     runs-on: ubuntu-latest
     steps:
       - name: Confirm workflow is healthy on feature/spec branches
         run: echo "Preflight passed for ${{ github.ref_name }}."
 
   agent_1_testgen:
-    if: github.ref == 'refs/heads/main'
+    if: >-
+      github.ref == 'refs/heads/main' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.full_pipeline_on_branch == 'true')
     runs-on: ubuntu-latest
     outputs:
       branch_name: ${{ steps.create_branch.outputs.branch }}

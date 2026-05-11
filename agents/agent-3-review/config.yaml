@@ -1,5 +1,4 @@
 agent: reviewer
-model: claude-4.6-sonnet-medium
 temperature: 0.1
 max_tokens: 4096
 context_sources:

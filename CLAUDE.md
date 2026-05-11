@@ -13,7 +13,7 @@
 
 - Level8 is an AI-first TDD project; specs are the source of truth
 - ETL code in `etl/` uses DuckDB (`level8.duckdb`) and `gh` CLI for GitHub API
-- Default model name is `claude-4.6-sonnet-medium`
+- Default model name is `composer-2`
 - GitHub Search API caps at 1000 results per query; ETL uses date-range bisection
 - Railway: deploy via `railway deploy` (no extra flags), Railpack build conventions, workflow triggers only for `agent/feature-*` branches
 - Frontend: Vite + React in `src/frontend/`; Backend: FastAPI in `src/backend/` with `/health` endpoint

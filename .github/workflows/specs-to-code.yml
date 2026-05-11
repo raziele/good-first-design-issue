@@ -215,7 +215,8 @@ jobs:
               ran_any=$((ran_any + 1))
               pytest_log="$(mktemp)"
               set +e
-              python -m pytest "$f" -v --tb=short --color=yes 2>&1 | tee "$pytest_log"
+              # --color=no: footer/summary lines must match grep anchors in this gate (ANSI breaks ^ patterns).
+              python -m pytest "$f" -v --tb=short --color=no 2>&1 | tee "$pytest_log"
               rc=${PIPESTATUS[0]}
               set -e
               case "$rc" in

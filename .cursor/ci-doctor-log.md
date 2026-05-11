@@ -378,3 +378,37 @@ Inventory of pre-agent-step writers in the current pipeline:
   If a future CI run logs "PRE_SNAPSHOT not set," that's the signal
   that an agent job was added without the snapshot step. Watch for it
   in the next few runs.
+
+---
+
+## 2026-05-11 — Run #25687367353 (main, merge PR #19)
+
+### Issues Found
+
+- **gate-false-negative / config-misclassification:** `pre_codegen_red_phase` →
+  `Verify red phase` failed with
+  `pytest exited 1 but produced neither (summary + failed tests) nor a collection-time SUT-import error`
+  for **every** backend changed test file, even though logs show a normal session
+  (collected N items, failures, `N failed in X.XXs`). **Root cause:** the gate
+  runs pytest with `--color=yes` and greps the **raw** log with
+  `grep -Eq '^=+ .* in [0-9]+(\.[0-9]+)?s'`. Pytest prefixes those lines with ANSI
+  SGR sequences, so the line no longer begins with `=` and the anchored pattern
+  never matches.
+
+### Fixes Applied
+
+- `.github/workflows/specs-to-code.yml`: in the red-phase per-file pytest loop,
+  changed `--color=yes` to `--color=no` and added a one-line comment explaining
+  why (grep anchors). Keeps summary-line and `N failed` checks reliable.
+
+### Structural Gaps Identified
+
+- Any CI step that **parses pytest stdout with regexes** must either disable color
+  (`--color=no`, `NO_COLOR=1`, `FORCE_COLOR=0`) or strip ANSI before matching.
+  Anchors like `^=+` are especially fragile.
+
+### Rules Derived
+
+- **Red-phase / gate scripts that grep pytest output: run pytest without color**
+  (or strip escapes). Do not mix `--color=yes` with line-anchored patterns on
+  the same stream.

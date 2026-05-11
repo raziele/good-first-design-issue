@@ -1,5 +1,210 @@
 {
-  "mappings": [],
-  "unmapped_specs": [],
-  "orphaned_tests": []
+  "mappings": [
+    {
+      "rule": "RULE-CLS-001",
+      "spec": "behavior/classification.spec.md",
+      "tests": [
+        "tests/backend/unit/test_issue_classification.py::test_design_issue_signals_relevance_for_design_keywords_rule_cls_001",
+        "tests/backend/unit/test_issue_classification.py::test_backend_issue_signals_not_relevant_rule_cls_001"
+      ]
+    },
+    {
+      "rule": "RULE-CLS-002",
+      "spec": "behavior/classification.spec.md",
+      "tests": [
+        "tests/backend/unit/test_issue_classification.py::test_empty_issue_description_always_not_relevant_rule_cls_002",
+        "tests/backend/unit/test_issue_classification.py::test_placeholder_heading_shell_is_not_relevant_rule_cls_002"
+      ]
+    },
+    {
+      "rule": "RULE-CLS-003",
+      "spec": "behavior/classification.spec.md",
+      "tests": [
+        "tests/backend/unit/test_issue_classification.py::test_claimed_but_relevant_issue_sets_claim_flag_rule_cls_003"
+      ]
+    },
+    {
+      "rule": "RULE-CLS-004",
+      "spec": "behavior/classification.spec.md",
+      "tests": [
+        "tests/backend/unit/test_issue_classification.py::test_exclusion_categories_force_not_relevant_rule_cls_004[*]"
+      ]
+    },
+    {
+      "rule": "RULE-SRC-001",
+      "spec": "behavior/search.spec.md",
+      "tests": [
+        "tests/backend/unit/test_issue_search_and_filters.py::test_search_matches_title_case_insensitive_rule_src_001",
+        "tests/backend/unit/test_issue_search_and_filters.py::test_search_matches_description_fragments_rule_src_001",
+        "tests/frontend/unit/Search.empty-results-copy.unit.test.ts::shows the scripted empty-results helper copyline"
+      ]
+    },
+    {
+      "rule": "RULE-SRC-002",
+      "spec": "behavior/search.spec.md",
+      "tests": [
+        "tests/backend/unit/test_issue_search_and_filters.py::test_freshness_preset_caps_reflect_spec_table_rule_src_002",
+        "tests/frontend/unit/Search.freshness-labels.unit.test.ts::mirrors enumerated filter badges from the Issue search spec tables"
+      ]
+    },
+    {
+      "rule": "RULE-SRC-003",
+      "spec": "behavior/search.spec.md",
+      "tests": [
+        "tests/backend/unit/test_issue_search_and_filters.py::test_combined_search_and_freshness_uses_logical_and_rule_src_003",
+        "tests/backend/integration/test_discovery_pipeline_slices.py::test_discovery_orders_mobile_slice_for_last_seven_days",
+        "tests/backend/integration/test_discovery_pipeline_slices.py::test_discovery_applies_preset_before_sorting_signals"
+      ]
+    },
+    {
+      "rule": "RULE-SRC-004",
+      "spec": "behavior/search.spec.md",
+      "tests": [
+        "tests/frontend/component/Search.mobile-filter-sheet.mount.test.jsx::uses a viewport-anchored surface for handset filter picks"
+      ]
+    },
+    {
+      "rule": "RULE-ISS-001",
+      "spec": "behavior/issues.spec.md",
+      "tests": [
+        "tests/backend/unit/test_issue_homepage_visibility.py::test_relevant_active_issue_surfaces_rule_iss_001",
+        "tests/backend/unit/test_issue_homepage_visibility.py::test_not_relevant_issue_hidden_rule_iss_001",
+        "tests/backend/unit/test_issue_homepage_visibility.py::test_archived_issue_hidden_rule_iss_001"
+      ]
+    },
+    {
+      "rule": "RULE-ISS-002",
+      "spec": "behavior/issues.spec.md",
+      "tests": [
+        "tests/frontend/component/IssueCard.required-elements.preview.test.jsx::renders repo, title, complexity, attractiveness, seniority, freshness, and media cues"
+      ]
+    },
+    {
+      "rule": "RULE-ISS-004",
+      "spec": "behavior/issues.spec.md",
+      "tests": [
+        "tests/backend/unit/test_issue_homepage_visibility.py::test_claimed_issues_surface_helper_copy_rule_iss_004",
+        "tests/backend/unit/test_issue_homepage_visibility.py::test_unclaimed_issues_omit_claim_badge_copy_rule_iss_004"
+      ]
+    },
+    {
+      "rule": "RULE-ISS-005",
+      "spec": "behavior/issues.spec.md",
+      "tests": [
+        "tests/backend/unit/test_issue_browse_sorting.py::test_default_homepage_sort_prioritizes_fresh_issues_rule_iss_005"
+      ]
+    },
+    {
+      "rule": "RULE-CLM-002",
+      "spec": "behavior/claim.spec.md",
+      "tests": [
+        "tests/backend/unit/test_claim_flow_policy.py::test_claim_comment_reflects_issue_context_voice_rule_clm_002"
+      ]
+    },
+    {
+      "rule": "RULE-CLM-003",
+      "spec": "behavior/claim.spec.md",
+      "tests": [
+        "tests/backend/unit/test_claim_flow_policy.py::test_no_local_claim_persistence_writes_rule_clm_003"
+      ]
+    },
+    {
+      "rule": "RULE-CLM-004",
+      "spec": "behavior/claim.spec.md",
+      "tests": [
+        "tests/backend/unit/test_claim_flow_policy.py::test_second_volunteers_keep_open_paths_rule_clm_004"
+      ]
+    },
+    {
+      "rule": "RULE-ETL-002",
+      "spec": "behavior/etl.spec.md",
+      "tests": [
+        "tests/backend/unit/test_initial_issue_age_gate.py::test_centenarian_issues_drop_from_initial_capture_rule_etl_002",
+        "tests/backend/unit/test_initial_issue_age_gate.py::test_recent_issue_survives_initial_capture_rule_etl_002"
+      ]
+    },
+    {
+      "rule": "RULE-ETL-004",
+      "spec": "behavior/etl.spec.md",
+      "tests": [
+        "tests/backend/unit/test_github_issue_lifecycle.py::test_closed_github_issue_archives_issue_record_rule_etl_004"
+      ]
+    },
+    {
+      "rule": "RULE-ETL-006",
+      "spec": "behavior/etl.spec.md",
+      "tests": [
+        "tests/backend/unit/test_visual_media_signals.py::test_media_presence_reflects_linked_assets_rule_etl_006[*]",
+        "tests/backend/unit/test_visual_media_signals.py::test_linked_media_without_visual_tokens_is_ambiguous_skip"
+      ]
+    },
+    {
+      "rule": "UX-search-debounce-flow",
+      "spec": "uxi/flows/search.flow.md",
+      "tests": [
+        "tests/frontend/unit/Search.debounce-ms.unit.test.ts::waits roughly 300ms before firing repository queries"
+      ]
+    },
+    {
+      "rule": "UX-clipboard-toast-copy",
+      "spec": "uxi/flows/claim-issue.flow.md",
+      "tests": [
+        "tests/frontend/unit/Claim.clipboard-toast.unit.test.ts::surfaces the toast copy designers expect after copying"
+      ]
+    },
+    {
+      "rule": "UX-browse-shell",
+      "spec": "uxi/flows/browse-issues.flow.md",
+      "tests": [
+        "tests/frontend/e2e/browse-issues.workflow.e2e.test.ts::enumerates deterministic navigation beats for playwright wiring"
+      ]
+    },
+    {
+      "rule": "UX-claim-shell",
+      "spec": "uxi/flows/claim-issue.flow.md",
+      "tests": [
+        "tests/frontend/e2e/claim-issue.workflow.e2e.test.ts::lists claim option beats for future browser automation"
+      ]
+    }
+  ],
+  "unmapped_specs": [
+    {
+      "id": "RULE-ISS-003",
+      "reason": "Detail surface needs routing + richer fixtures before DOM-level assertions stabilize"
+    },
+    {
+      "id": "RULE-CLM-001",
+      "reason": "GitHub redirects + navigator clipboard require browser sandbox coverage"
+    },
+    {
+      "id": "RULE-ETL-001",
+      "reason": "GitHub Actions scheduling contract out of pytest scope until harness exists"
+    },
+    {
+      "id": "RULE-ETL-003",
+      "reason": "Refresh merge scenarios need DuckDB + mocked gh queries"
+    },
+    {
+      "id": "RULE-ETL-005",
+      "reason": "AI enrichment payloads lack deterministic stubs in red phase"
+    },
+    {
+      "id": "brand/voice-and-tone.md",
+      "reason": "Copy tone guidance not yet enforced via automated probes"
+    },
+    {
+      "id": "brand/visual-identity.md",
+      "reason": "Pixel/visual regression tooling not wired for Vitest"
+    },
+    {
+      "id": "api/openapi.yaml",
+      "reason": "Contract tests pinned under forbidden tests/**/contract scope"
+    }
+  ],
+  "orphaned_tests": [
+    {
+      "path": "tests/backend/unit/test_sut_stub_generator.py",
+      "notes": "Meta coverage for CI stub tooling; retains human ownership outside spec traceability loops"
+    }
+  ]
 }

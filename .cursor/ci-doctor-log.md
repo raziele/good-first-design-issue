@@ -412,3 +412,36 @@ Inventory of pre-agent-step writers in the current pipeline:
 - **Red-phase / gate scripts that grep pytest output: run pytest without color**
   (or strip escapes). Do not mix `--color=yes` with line-anchored patterns on
   the same stream.
+
+---
+
+## 2026-05-11 — Run #25688146678 (`fix/ci-red-phase-pytest-no-color`, workflow_dispatch full pipeline)
+
+### Issues Found
+
+- **scope-violation (false positive):** `agent_1_testgen` → `Validate file scope` failed with
+  `agent-1-testgen wrote to explicitly denied paths: src/frontend/package-lock.json`.
+  **Root cause:** agent-1 is deny-listed on `src/**` (correct — it must not edit product code).
+  The testgen agent ran **`npm install`** under `src/frontend`, which **created** `package-lock.json`
+  **after** the pre-agent snapshot. The snapshot diff attributed that new path to the agent → deny
+  rule tripped. Same class as prior CI artifacts (`skills-lock.json`, `.vite/`): **tool output under
+  a denied tree** that is not gitignored.
+
+### Fixes Applied
+
+- `.gitignore`: added `src/frontend/package-lock.json` with rationale. The repo intentionally has
+  no committed frontend lockfile (`npm install`, not `npm ci`); ignored lockfiles are excluded from
+  `git ls-files --others --exclude-standard`, so they no longer enter scope attribution.
+
+### Structural Gaps Identified
+
+- **agent_1_testgen** does not run `npm install` before the agent (unlike agent-2), so the model
+  often runs npm itself to validate frontend tests — creating a lockfile. Either **pre-install in CI**
+  (before snapshot) or **gitignore the lockfile** is required; gitignore matches the “no lockfile in
+  git” policy.
+
+### Rules Derived
+
+- If **`src/**` is denied** for an agent but that agent’s workflow may run **npm under
+  `src/frontend/`**, either **gitignore `package-lock.json`** there or **run `npm install` before the
+  pre-agent snapshot** so the lockfile is not a net-new attributed path.

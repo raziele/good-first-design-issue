@@ -37,6 +37,11 @@ skills-lock.json
 # whichever agent ran tests in its job)
 .vite/
 
+# Frontend lockfile is not committed yet (see AGENTS.md — npm install, not npm ci).
+# When the agent runs npm in src/frontend, package-lock.json is untracked; without
+# this entry it is misattributed to agent-1 and fails the src/** deny rule.
+src/frontend/package-lock.json
+
 # Local-only files
 designboard.zip
 user-data/

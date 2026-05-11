@@ -1,5 +1,172 @@
 {
-  "mappings": [],
-  "unmapped_specs": [],
+  "mappings": [
+    {
+      "spec_id": "RULE-CLS-001",
+      "spec_file": "specs/behavior/classification.spec.md",
+      "tests": [
+        "tests/backend/unit/test_classification.py::test_design_issue_classified_as_relevant",
+        "tests/backend/unit/test_classification.py::test_backend_issue_classified_as_not_relevant"
+      ]
+    },
+    {
+      "spec_id": "RULE-CLS-002",
+      "spec_file": "specs/behavior/classification.spec.md",
+      "tests": [
+        "tests/backend/unit/test_classification.py::test_empty_description_is_not_relevant",
+        "tests/backend/unit/test_classification.py::test_placeholder_only_description_is_not_relevant"
+      ]
+    },
+    {
+      "spec_id": "RULE-CLS-003",
+      "spec_file": "specs/behavior/classification.spec.md",
+      "tests": []
+    },
+    {
+      "spec_id": "RULE-CLS-004",
+      "spec_file": "specs/behavior/classification.spec.md",
+      "tests": [
+        "tests/backend/unit/test_classification.py::test_exclusion_patterns_classify_as_not_relevant[test coverage, unit test, QA case]",
+        "tests/backend/unit/test_classification.py::test_exclusion_patterns_classify_as_not_relevant[api endpoint, backend, database migration]",
+        "tests/backend/unit/test_classification.py::test_exclusion_patterns_classify_as_not_relevant[refactor, rename X to Y]",
+        "tests/backend/unit/test_classification.py::test_exclusion_patterns_classify_as_not_relevant[implement in code, code base for]",
+        "tests/backend/unit/test_classification.py::test_exclusion_patterns_classify_as_not_relevant[sprite sheet, UTF files, game assets]"
+      ]
+    },
+    {
+      "spec_id": "RULE-ETL-002",
+      "spec_file": "specs/behavior/etl.spec.md",
+      "tests": [
+        "tests/backend/unit/test_etl.py::test_issue_older_than_90_days_excluded_on_initial_fetch",
+        "tests/backend/unit/test_etl.py::test_issue_within_90_days_included_on_initial_fetch",
+        "tests/backend/unit/test_etl.py::test_issue_exactly_90_days_is_included",
+        "tests/backend/unit/test_etl.py::test_issue_91_days_is_excluded"
+      ]
+    },
+    {
+      "spec_id": "RULE-ETL-004",
+      "spec_file": "specs/behavior/etl.spec.md",
+      "tests": [
+        "tests/backend/unit/test_etl.py::test_closed_issue_should_be_archived",
+        "tests/backend/unit/test_etl.py::test_open_issue_should_not_be_archived"
+      ]
+    },
+    {
+      "spec_id": "RULE-ETL-006",
+      "spec_file": "specs/behavior/etl.spec.md",
+      "tests": [
+        "tests/backend/unit/test_etl.py::test_description_with_markdown_image_sets_has_media",
+        "tests/backend/unit/test_etl.py::test_description_with_html_img_sets_has_media",
+        "tests/backend/unit/test_etl.py::test_description_with_video_link_sets_has_media",
+        "tests/backend/unit/test_etl.py::test_plain_text_description_no_media",
+        "tests/backend/unit/test_etl.py::test_empty_description_no_media"
+      ]
+    },
+    {
+      "spec_id": "RULE-ISS-001",
+      "spec_file": "specs/behavior/issues.spec.md",
+      "tests": [
+        "tests/backend/unit/test_issues.py::test_relevant_active_issue_appears_in_listing",
+        "tests/backend/unit/test_issues.py::test_not_relevant_issue_is_hidden",
+        "tests/backend/unit/test_issues.py::test_archived_issue_is_hidden_from_main_listing",
+        "tests/backend/unit/test_issues.py::test_closed_issue_is_hidden_from_main_listing",
+        "tests/backend/unit/test_issues.py::test_mixed_issues_returns_only_relevant_active"
+      ]
+    },
+    {
+      "spec_id": "RULE-ISS-002",
+      "spec_file": "specs/behavior/issues.spec.md",
+      "tests": [
+        "tests/backend/unit/test_issues.py::test_short_description_is_not_truncated",
+        "tests/backend/unit/test_issues.py::test_long_description_truncated_to_200_chars",
+        "tests/backend/unit/test_issues.py::test_truncated_description_ends_with_ellipsis",
+        "tests/frontend/unit/IssueUtils.truncation.test.ts",
+        "tests/frontend/component/IssueCard.display.test.tsx"
+      ]
+    },
+    {
+      "spec_id": "RULE-ISS-004",
+      "spec_file": "specs/behavior/issues.spec.md",
+      "tests": [
+        "tests/frontend/component/IssueCard.display.test.tsx"
+      ]
+    },
+    {
+      "spec_id": "RULE-ISS-005",
+      "spec_file": "specs/behavior/issues.spec.md",
+      "tests": [
+        "tests/backend/unit/test_issues.py::test_issues_sorted_by_freshness_ascending"
+      ]
+    },
+    {
+      "spec_id": "RULE-SRC-001",
+      "spec_file": "specs/behavior/search.spec.md",
+      "tests": [
+        "tests/backend/unit/test_search.py::test_search_matches_title",
+        "tests/backend/unit/test_search.py::test_search_matches_description",
+        "tests/backend/unit/test_search.py::test_search_returns_empty_when_no_match",
+        "tests/backend/unit/test_search.py::test_search_is_case_insensitive",
+        "tests/frontend/unit/SearchFilter.filtering.test.ts",
+        "tests/frontend/component/SearchBar.interaction.test.tsx"
+      ]
+    },
+    {
+      "spec_id": "RULE-SRC-002",
+      "spec_file": "specs/behavior/search.spec.md",
+      "tests": [
+        "tests/backend/unit/test_search.py::test_freshness_filter_keeps_issues_within_window[last_7_days-7]",
+        "tests/backend/unit/test_search.py::test_freshness_filter_keeps_issues_within_window[last_30_days-30]",
+        "tests/backend/unit/test_search.py::test_freshness_filter_keeps_issues_within_window[last_90_days-90]",
+        "tests/backend/unit/test_search.py::test_all_time_filter_returns_all_issues",
+        "tests/frontend/unit/SearchFilter.filtering.test.ts"
+      ]
+    },
+    {
+      "spec_id": "RULE-SRC-003",
+      "spec_file": "specs/behavior/search.spec.md",
+      "tests": [
+        "tests/backend/unit/test_search.py::test_combined_search_and_freshness_filter",
+        "tests/frontend/unit/SearchFilter.filtering.test.ts"
+      ]
+    },
+    {
+      "spec_id": "RULE-SRC-004",
+      "spec_file": "specs/behavior/search.spec.md",
+      "tests": [
+        "tests/frontend/component/SearchBar.interaction.test.tsx"
+      ]
+    },
+    {
+      "spec_id": "RULE-CLM-001",
+      "spec_file": "specs/behavior/claim.spec.md",
+      "tests": [
+        "tests/frontend/component/ClaimModal.options.test.tsx"
+      ]
+    },
+    {
+      "spec_id": "RULE-CLM-002",
+      "spec_file": "specs/behavior/claim.spec.md",
+      "tests": [
+        "tests/frontend/component/ClaimModal.options.test.tsx"
+      ]
+    },
+    {
+      "spec_id": "RULE-CLM-003",
+      "spec_file": "specs/behavior/claim.spec.md",
+      "tests": []
+    },
+    {
+      "spec_id": "RULE-CLM-004",
+      "spec_file": "specs/behavior/claim.spec.md",
+      "tests": []
+    }
+  ],
+  "unmapped_specs": [
+    "RULE-ETL-001",
+    "RULE-ETL-003",
+    "RULE-ETL-005",
+    "RULE-CLM-003",
+    "RULE-CLM-004",
+    "RULE-CLS-003"
+  ],
   "orphaned_tests": []
 }

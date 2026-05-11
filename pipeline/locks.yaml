@@ -20,6 +20,11 @@ permissions:
       - "src/**"
       - "agents/**"
       - "pipeline/**"
+    # Paths removed from post-snapshot attribution: npm refreshes the lockfile when
+    # the agent runs install in src/frontend; that is not an intentional src/** write.
+    # Works even if package-lock.json is tracked (gitignore alone does not).
+    ignore_for_attribution:
+      - "src/frontend/package-lock.json"
 
   agent-2-codegen:
     read:  ["specs/**", "tests/**"]

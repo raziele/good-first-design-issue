@@ -26,10 +26,14 @@ for p in perms.get('write', []):
 print('DENY')
 for p in perms.get('deny', []):
     print(to_regex(p))
+print('IGNORE')
+for p in perms.get('ignore_for_attribution', []):
+    print(p)
 ")
 
 ALLOWED=$(echo "$PATTERNS" | awk '/^ALLOWED$/{flag=1;next}/^DENY$/{flag=0}flag')
-DENY=$(echo "$PATTERNS"   | awk '/^DENY$/{flag=1;next}flag')
+DENY=$(echo "$PATTERNS"   | awk '/^DENY$/{flag=1;next}/^IGNORE$/{flag=0}flag')
+IGNORE=$(echo "$PATTERNS" | awk '/^IGNORE$/{flag=1;next}flag')
 
 if [ -z "$ALLOWED" ]; then
     echo "No write permissions defined for $AGENT_NAME — skipping scope check"
@@ -73,6 +77,26 @@ if [ -n "${PRE_SNAPSHOT:-}" ] && [ -f "$PRE_SNAPSHOT" ]; then
 else
     echo "::warning::PRE_SNAPSHOT not set — falling back to legacy 'all-untracked-is-agent' attribution. Add a 'Snapshot worktree (pre-agent)' step to this job for accurate scope validation."
     CHANGED="$POST_LIST"
+fi
+
+# Drop paths that tooling may refresh but that are not meaningful "agent writes"
+# (see pipeline/locks.yaml ignore_for_attribution).
+if [ -n "$IGNORE" ]; then
+  FILTERED=""
+  while IFS= read -r file; do
+    [ -z "$file" ] && continue
+    skip=false
+    while IFS= read -r ign; do
+      [ -z "$ign" ] && continue
+      if [ "$file" = "$ign" ]; then
+        skip=true
+        break
+      fi
+    done <<< "$IGNORE"
+    [ "$skip" = true ] && continue
+    FILTERED+="${file}"$'\n'
+  done <<< "$CHANGED"
+  CHANGED=$(printf '%s' "$FILTERED" | sed '/^$/d')
 fi
 
 if [ -z "$CHANGED" ]; then

@@ -184,13 +184,16 @@ scripts/run_agent.py <agent-name>
 
 ### Model Configuration
 
-Each agent's model is defined in its `config.yaml`. The default is `claude-4.6-sonnet-medium`. To change a model, edit the relevant config file — no code changes needed.
+The Cursor CLI model is controlled at the project level by the `CURSOR_MODEL` environment variable, which is set once per workflow via the top-level `env:` block (see `.github/workflows/specs-to-code.yml` and `pr-approved-docgen.yml`). The workflow reads it from the `CURSOR_MODEL` **GitHub repository variable** (Settings → Secrets and variables → Actions → Variables), with a literal fallback of `composer-2` if that variable isn't set.
 
-| Agent | Config | Default Model |
-|-------|--------|---------------|
-| Agent 1 — Test Generator | `agents/agent-1-testgen/config.yaml` | `claude-4.6-sonnet-medium` |
-| Agent 2 — Code Generator | `agents/agent-2-codegen/config.yaml` | `claude-4.6-sonnet-medium` |
-| Agent 3 — Reviewer | `agents/agent-3-review/config.yaml` | `claude-4.6-sonnet-medium` |
+To change the model for all agents, set the `CURSOR_MODEL` repo variable — no code edits required.
+
+**Resolution order** (in `scripts/run_agent.py`):
+1. `CURSOR_MODEL` environment variable (project-level default, set by workflow)
+2. `model:` key in `agents/<name>/config.yaml` (per-agent override; omitted by default)
+3. `DEFAULT_MODEL` in `scripts/cursor_agent.py` (`composer-2`)
+
+To override the model for a single agent (e.g., a stronger model for the reviewer), add `model: <model-name>` to that agent's `config.yaml`.
 
 ### Secret Management
 

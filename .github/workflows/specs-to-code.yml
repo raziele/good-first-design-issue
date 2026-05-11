@@ -14,6 +14,12 @@ permissions:
   contents: write
   pull-requests: write
 
+env:
+  # Project-level model for the Cursor CLI. Override per-repo by setting the
+  # `CURSOR_MODEL` repository variable (Settings → Secrets and variables →
+  # Actions → Variables). The literal is a fallback if the variable isn't set.
+  CURSOR_MODEL: ${{ vars.CURSOR_MODEL || 'composer-2' }}
+
 jobs:
   branch_preflight:
     if: github.ref != 'refs/heads/main'

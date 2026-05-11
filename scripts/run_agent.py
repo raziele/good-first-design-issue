@@ -5,6 +5,7 @@ Usage: python scripts/run_agent.py <agent-name> [--extra-context <text>]
 """
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -48,7 +49,13 @@ def main():
     args = parser.parse_args()
 
     config = load_agent_config(args.agent_name)
-    model = config.get("model", DEFAULT_MODEL)
+    # Resolution order: CURSOR_MODEL env var (project-level, set by workflow)
+    # > per-agent config override > built-in default.
+    model = (
+        os.environ.get("CURSOR_MODEL", "").strip()
+        or config.get("model")
+        or DEFAULT_MODEL
+    )
 
     prompt = load_agent_prompt(args.agent_name)
     scope = load_scope_preamble(args.agent_name)

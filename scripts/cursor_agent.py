@@ -9,7 +9,7 @@ import yaml
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 AGENTS_DIR = PROJECT_ROOT / "agents"
 
-DEFAULT_MODEL = "claude-4.6-sonnet-medium"
+DEFAULT_MODEL = "composer-2"
 DEFAULT_TIMEOUT = 900
 
 

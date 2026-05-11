@@ -3,13 +3,48 @@ name: Preview Deploy (Railway)
 on:
   pull_request:
     types: [opened, synchronize, closed]
+  # PRs opened by specs-to-code use GITHUB_TOKEN; those do NOT trigger pull_request
+  # workflows (GitHub suppresses recursive workflow runs). Use this to deploy the
+  # agent branch to the same Railway env as the PR would use: pr-<PR_NUMBER>.
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git branch or SHA to deploy (e.g. agent/feature-25692212336)"
+        required: true
+        type: string
+      pr_number:
+        description: "GitHub PR number → Railway environment pr-{n} (e.g. 20)"
+        required: true
+        type: string
 
 jobs:
   deploy-preview:
-    if: startsWith(github.head_ref, 'agent/feature-') && github.event.action != 'closed'
+    if: >-
+      (github.event_name == 'pull_request' && startsWith(github.head_ref, 'agent/feature-') && github.event.action != 'closed') ||
+      (github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
+      - name: Resolve checkout ref and PR number
+        id: meta
+        env:
+          DISPATCH_REF: ${{ github.event.inputs.ref }}
+          DISPATCH_PR: ${{ github.event.inputs.pr_number }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "ref=${DISPATCH_REF}" >> "$GITHUB_OUTPUT"
+            echo "pr=${DISPATCH_PR}" >> "$GITHUB_OUTPUT"
+          else
+            echo "ref=${{ github.event.pull_request.head.sha }}" >> "$GITHUB_OUTPUT"
+            echo "pr=${{ github.event.number }}" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          ref: ${{ steps.meta.outputs.ref }}
 
       - name: Set up Node
         uses: actions/setup-node@v6
@@ -22,13 +57,13 @@ jobs:
       - name: Deploy backend to preview
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: railway up --service backend --environment pr-${{ github.event.number }}
+        run: railway up --service backend --environment pr-${{ steps.meta.outputs.pr }}
         working-directory: src/backend
 
       - name: Deploy frontend to preview
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: railway up --service frontend --environment pr-${{ github.event.number }}
+        run: railway up --service frontend --environment pr-${{ steps.meta.outputs.pr }}
         working-directory: src/frontend
 
       - name: Get preview URLs and comment on PR
@@ -36,18 +71,19 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          BACKEND_URL=$(railway status --service backend --environment pr-${{ github.event.number }} --json | jq -r '.url // "pending"')
-          FRONTEND_URL=$(railway status --service frontend --environment pr-${{ github.event.number }} --json | jq -r '.url // "pending"')
-          gh pr comment ${{ github.event.number }} --body "## Sandbox Preview
+          PR="${{ steps.meta.outputs.pr }}"
+          BACKEND_URL=$(railway status --service backend --environment "pr-${PR}" --json | jq -r '.url // "pending"')
+          FRONTEND_URL=$(railway status --service frontend --environment "pr-${PR}" --json | jq -r '.url // "pending"')
+          gh pr comment "${PR}" --body "## Sandbox Preview
 
           The preview environment is ready.
 
           | Service | URL |
           |---------|-----|
-          | Frontend | $FRONTEND_URL |
-          | Backend API | $BACKEND_URL |
+          | Frontend | ${FRONTEND_URL} |
+          | Backend API | ${BACKEND_URL} |
 
-          _Deployed via Railway — environment \`pr-${{ github.event.number }}\`_"
+          _Deployed via Railway — environment \`pr-${PR}\`_"
 
   teardown-preview:
     if: startsWith(github.head_ref, 'agent/feature-') && github.event.action == 'closed'

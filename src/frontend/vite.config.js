@@ -14,6 +14,9 @@ export default defineConfig({
   preview: {
     port: 4173,
     host: true,
+    // Railway (and similar) assign a unique *.up.railway.app host per deploy; without
+    // this, preview responds with "Blocked request... is not allowed".
+    allowedHosts: true,
   },
   resolve: {
     alias: {
